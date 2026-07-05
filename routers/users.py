@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.Controllers.UserControllers import get_all_users
+from app.controllers.user_controller import get_all_users
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
