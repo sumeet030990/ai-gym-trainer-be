@@ -1,7 +1,0 @@
-fastapi[standard]
-uvicorn[standard]
-alembic
-asyncpg
-sqlalchemy
-python-dotenv
-pydantic-settings
