@@ -11,7 +11,7 @@ class Exercises(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     name: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str | None] = mapped_column(nullable=True)
-    equipment_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("gym_equipments.id"), nullable=True, index=True)
-    muscle_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("muscles.id"), nullable=True, index=True)
+    equipment_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("gym_equipments.id", ondelete="CASCADE"), nullable=True, index=True)
+    muscle_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("muscles.id", ondelete="SET NULL"), nullable=True, index=True)
     video_url: Mapped[str | None] = mapped_column(nullable=True)
     video_provider: Mapped[str | None] = mapped_column(nullable=True)

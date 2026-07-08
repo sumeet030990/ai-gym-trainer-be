@@ -9,7 +9,7 @@ from db.mixins import TimestampMixin, UUIDPrimaryKeyMixin
 class WorkoutExerciseDetails(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "workout_exercise_details"
 
-    workout_exercise_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workout_exercises.id"), nullable=False, index=True)
+    workout_exercise_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("workout_exercises.id", ondelete="CASCADE"), nullable=False, index=True)
     target_sets: Mapped[int] = mapped_column(nullable=False)
     actual_sets: Mapped[int | None] = mapped_column(nullable=True)  # Actual sets can be optional
     target_reps: Mapped[int] = mapped_column(nullable=False)
