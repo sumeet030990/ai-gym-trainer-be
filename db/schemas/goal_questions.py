@@ -3,8 +3,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 import uuid
 from db.database import Base
 
-class Questions(Base):
-    __tablename__ = "questions"
+class GoalQuestions(Base):
+    __tablename__ = "goal_questions"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     question: Mapped[str] = mapped_column(nullable=False)
