@@ -1,14 +1,13 @@
-
 from sqlalchemy.orm import Mapped, mapped_column
-import uuid
-from db.database import Base
 
-class GoalQuestions(Base):
+from db.database import Base
+from db.mixins import TimestampMixin, UUIDPrimaryKeyMixin
+
+class GoalQuestions(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "goal_questions"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     question: Mapped[str] = mapped_column(nullable=False)
     is_multiple_choice: Mapped[bool] = mapped_column(nullable=False, default=False)
     is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
-    category: Mapped[int] = mapped_column(nullable=True)
-    sort_order: Mapped[int] = mapped_column(nullable=True)
+    category: Mapped[int | None] = mapped_column(nullable=True)
+    sort_order: Mapped[int | None] = mapped_column(nullable=True)

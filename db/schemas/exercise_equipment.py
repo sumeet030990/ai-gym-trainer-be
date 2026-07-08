@@ -1,11 +1,13 @@
-from db.database import Base
 import uuid
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import ForeignKey
 
-class ExerciseEquipment(Base):
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column
+
+from db.database import Base
+from db.mixins import TimestampMixin, UUIDPrimaryKeyMixin
+
+class ExerciseEquipment(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "exercise_equipment"
 
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
-    exercise_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("exercises.id"), nullable=False)
-    equipment_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("gym_equipments.id"), nullable=False)
+    exercise_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("exercises.id"), nullable=False, index=True)
+    equipment_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("gym_equipments.id"), nullable=False, index=True)
