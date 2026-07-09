@@ -1,4 +1,4 @@
-from sqlalchemy import text
+from sqlalchemy import MetaData, text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.pool import NullPool
@@ -6,11 +6,23 @@ from sqlalchemy.pool import NullPool
 from core.config import get_settings
 
 
+# Deterministic names for indexes/constraints so Alembic autogenerate never
+# emits unnamed constraints (e.g. op.create_foreign_key(None, ...)), which
+# breaks the corresponding downgrade's op.drop_constraint(None, ...).
+NAMING_CONVENTION = {
+    "ix": "ix_%(column_0_label)s",
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s",
+}
+
+
 # Base class that all SQLAlchemy ORM models (e.g. db/schemas/users.py) must
 # inherit from. It gives SQLAlchemy the metadata it needs to map classes to
 # database tables and is also what Alembic will read to autogenerate migrations.
 class Base(DeclarativeBase):
-    pass
+    metadata = MetaData(naming_convention=NAMING_CONVENTION)
 
 # The engine manages the pool of connections to the database.
 # NullPool disables connection pooling (a new connection is opened and closed
