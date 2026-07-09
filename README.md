@@ -18,3 +18,16 @@
   - alembic upgrade head
 - Roll back the last revision
   - alembic downgrade -1
+
+## Database Seeding
+- Seed the database with initial reference data (roles, muscles, gyms/equipment, exercises, goal questions, AI providers/models):
+  - uv run python -m db.seeders.seed
+- The seeder is idempotent — running it multiple times will not create duplicate rows.
+
+## Reset the Database from Scratch
+- Roll back all migrations (drops all tables):
+  - alembic downgrade base
+- Re-apply all migrations (recreates all tables):
+  - alembic upgrade head
+- Re-seed the database:
+  - uv run python -m db.seeders.seed

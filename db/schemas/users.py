@@ -1,4 +1,5 @@
 from datetime import date
+import enum
 import uuid
 
 from sqlalchemy import ForeignKey
@@ -7,8 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from db.database import Base
 from db.mixins import TimestampMixin, UUIDPrimaryKeyMixin
 
-
-class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+class Users(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "users"
 
     role_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("roles.id"), nullable=False, index=True)
