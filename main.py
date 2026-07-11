@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.middlewares import StructuredResponseMiddleware
 from db.database import engine, init_db
 from routers import api_router
 
@@ -21,5 +22,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(StructuredResponseMiddleware)
 
 app.include_router(api_router)
