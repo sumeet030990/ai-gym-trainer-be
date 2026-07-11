@@ -27,7 +27,7 @@ class Base(DeclarativeBase):
 # The engine manages the pool of connections to the database.
 # NullPool disables connection pooling (a new connection is opened and closed
 # for every use) rather than reusing a fixed set of connections.
-engine = create_async_engine(get_settings().database_url, echo=True, poolclass=NullPool)
+engine = create_async_engine(get_settings().database_url, poolclass=NullPool)
 
 # Factory for creating new AsyncSession objects bound to the engine.
 # expire_on_commit=False keeps loaded attributes usable after a commit,
