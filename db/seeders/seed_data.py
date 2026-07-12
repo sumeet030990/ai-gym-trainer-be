@@ -5,7 +5,7 @@ equipment, common exercises, onboarding questions, and AI provider/model
 catalogs) -- not synthetic/fake test data and not user PII.
 """
 
-ROLES = ["Admin", "Trainer", "Member"]
+ROLES = ["Admin", "Trainer", "User"]
 
 MUSCLES = [
     ("Chest"),
