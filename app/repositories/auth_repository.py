@@ -20,7 +20,16 @@ async def get_by_email(session: AsyncSession, email: str) -> Users | None:
 
 
 async def create(session: AsyncSession, user: Users) -> Users:
-    session.add(user)
-    await session.commit()
-    await session.refresh(user)
-    return user
+    try:
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        return user
+    except Exception as e:
+        await session.rollback()
+        raise e
+
+
+async def get_by_mobile_or_email(session: AsyncSession, user_name: str) -> Users | None:
+    stmt = select(Users).where((Users.mobile_no == user_name) | (Users.email == user_name))
+    return (await session.execute(stmt)).scalar_one_or_none()

@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     database_name: str
     database_user: str
     database_password: str
+    secret_key: str
+    algorithm: str
+    access_token_expire_minutes: int
 
     @property
     def database_url(self) -> str:
@@ -23,3 +26,6 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     return Settings()  # pyright: ignore[reportCallIssue]
+
+
+settings = get_settings()

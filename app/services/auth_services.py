@@ -2,8 +2,8 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories import auth_repository
-from app.schemas.auth_schemas import UserRegisterRequest
-from core.security import hash_password
+from app.schemas.auth_schemas import UserRegisterRequest, UserRegisterResponse
+from core.security import hash_password, verify_password, create_access_token
 from db.schemas import Users
 
 DEFAULT_ROLE_NAME = "User"
@@ -33,3 +33,20 @@ async def register(payload: UserRegisterRequest, session: AsyncSession) -> Users
         birth_date=payload.birth_date,
     )
     return await auth_repository.create(session, user)
+
+
+
+async def login(payload, session: AsyncSession):
+    user = await auth_repository.get_by_mobile_or_email(session, payload.user_name)
+    if user is None:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials.")
+    else:
+        if not verify_password(payload.password, user.password):
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials.")
+        else:
+            userData = UserRegisterResponse.model_validate(user).model_dump(mode="json")
+            access_token = create_access_token(userData)
+            return {"access_token": access_token, "user": userData}
+    
+
+    

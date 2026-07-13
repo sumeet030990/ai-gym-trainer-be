@@ -33,3 +33,10 @@ class UserRegisterResponse(BaseModel):
     last_name: str | None
     birth_date: date | None
     created_at: datetime
+
+
+class UserLoginRequest(BaseModel):
+    """Request body for POST /login."""
+
+    user_name: str
+    password: str = Field(min_length=8, max_length=72)

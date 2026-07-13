@@ -8,3 +8,7 @@ async def register(payload: UserRegisterRequest, db_session: AsyncSession) -> Us
     user = await auth_services.register(payload, db_session)
     
     return UserRegisterResponse.model_validate(user)
+
+
+async def login(payload, db_session: AsyncSession):
+    return await auth_services.login(payload, db_session)
