@@ -1,4 +1,9 @@
-from fastapi.params import Depends
+from typing_extensions import Annotated
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.services import user_service
+from db.database import get_session
+from fastapi import HTTPException
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
 import jwt
 from datetime import datetime, timedelta, timezone
@@ -8,6 +13,7 @@ from pwdlib import PasswordHash
 
 
 password_hash = PasswordHash.recommended()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 def hash_password(plain_password: str) -> str:
     return password_hash.hash(plain_password)
@@ -29,4 +35,26 @@ def create_access_token(data: dict):
         print("Error creating access token:", e)
         raise e
     
-    
+
+async def is_user_authenticated(token: Annotated[str, Depends(oauth2_scheme)], db_session: AsyncSession = Depends(get_session)):
+    try:
+        user = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        if user is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        else:
+            user_name = user.get("mobile_no") or user.get("email")
+            if user_name is None:
+                raise HTTPException(status_code=401, detail="Invalid token: missing user identifier")
+            
+            user_data = await user_service.get_user_by_mobile_or_email(user_name, db_session)
+            if user_data is None:
+                raise HTTPException(status_code=401, detail="Invalid token")
+            return user_data
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token has expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+
+
