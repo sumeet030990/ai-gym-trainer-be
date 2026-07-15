@@ -1,6 +1,7 @@
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.auth_schemas import UserRegisterResponse
+from app.schemas.auth_schemas import UserRegisterResponse, UserUpdateRequest
 from app.schemas.common_schemas import PaginatedResponse, PaginationMeta
 from app.services import user_service
 
@@ -26,3 +27,14 @@ async def get_user_by_id(id: str, db_session: AsyncSession) -> UserRegisterRespo
     if not user:
         raise ValueError("User not found")
     return UserRegisterResponse.model_validate(user)
+
+async def update_user_by_id(id: str, payload: UserUpdateRequest, db_session: AsyncSession) -> UserRegisterResponse:
+    user = await user_service.update_user_by_id(id, payload, db_session)
+    if not user:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
+    return UserRegisterResponse.model_validate(user)
+
+async def delete_user_by_id(id: str, db_session: AsyncSession) -> dict:
+   result = await user_service.delete_user_by_id(id, db_session)
+  
+   return {"message": "User deleted successfully"}

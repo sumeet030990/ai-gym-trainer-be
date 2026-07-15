@@ -35,6 +35,16 @@ class UserRegisterResponse(BaseModel):
     created_at: datetime
 
 
+class UserUpdateRequest(BaseModel):
+    """Request body for PUT /users/{id}. Only fields explicitly provided are updated."""
+
+    mobile_no: str | None = Field(default=None, pattern=_MOBILE_NO_PATTERN, description="E.164-style mobile number, e.g. +14155552671")
+    email: EmailStr | None = None
+    first_name: str | None = Field(default=None, max_length=100)
+    last_name: str | None = Field(default=None, max_length=100)
+    birth_date: date | None = None
+
+
 class UserLoginRequest(BaseModel):
     """Request body for POST /login."""
 
