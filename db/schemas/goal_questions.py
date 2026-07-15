@@ -1,5 +1,7 @@
 import enum
+import uuid
 
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
 from db.database import Base
@@ -17,6 +19,6 @@ class GoalQuestions(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     question: Mapped[str] = mapped_column(nullable=False)
     question_type: Mapped[QUESTION_TYPE] = mapped_column(nullable=False, default=QUESTION_TYPE.TEXT)
     is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
-    category: Mapped[int | None] = mapped_column(nullable=True)
+    category: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True)
     sort_order: Mapped[int | None] = mapped_column(nullable=True)
     

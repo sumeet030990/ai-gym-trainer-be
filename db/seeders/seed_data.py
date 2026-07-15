@@ -25,6 +25,19 @@ MUSCLES = [
     ("Cardio"),
 ]
 
+CATEGORIES = [
+    "Goals",
+    "Profile",
+    "Training Experience",
+    "Availability",
+    "Environment/Equip",
+    "Lifestyle",
+    "Medical & Injury",
+    "Diet",
+    "Preferences",
+    "AI Personalization",
+]
+
 AI_PROVIDERS = {
     "OpenAI": ["gpt-4o", "gpt-4o-mini", "gpt-4.1"],
     "Anthropic": ["claude-sonnet-5", "claude-opus-4-8", "claude-haiku-4-5-20251001"],
@@ -81,24 +94,17 @@ EXERCISES = [
 ]
 
 # (question, question_type ["radio" = single choice, "checkbox" = multiple choice, "text" = free text],
-#  category, sort_order, [options])
-#
-# category key:
-#   1 = Goals               6  = Lifestyle
-#   2 = Profile             7  = Medical & Injury
-#   3 = Training Experience 8  = Diet
-#   4 = Availability        9  = Preferences
-#   5 = Environment/Equip   10 = AI Personalization
+#  category [must match a name in CATEGORIES], sort_order, [options])
 #
 # Fields already captured elsewhere are intentionally NOT repeated here:
 #   age (users.birth_date), height/weight/chest/waist/hips/arms/thighs/neck/body_fat
 #   (all on body_measurements), diet_type base value (users.diet_type).
 GOAL_QUESTIONS = [
-    # 1. Goals
+    # Goals
     (
         "What is your primary fitness goal?",
         "radio",
-        1,
+        "Goals",
         1,
         [
             "Lose Weight", "Lose Body Fat", "Build Muscle", "Gain Weight", "Increase Strength",
@@ -106,85 +112,85 @@ GOAL_QUESTIONS = [
             "General Fitness", "Prepare for an Event", "Lean Body", "Custom Goal",
         ],
     ),
-    ("Describe your goal in your own words", "text", 1, 2, []),
+    ("Describe your goal in your own words", "text", "Goals", 2, []),
     (
         "Any secondary goals?",
         "checkbox",
-        1,
+        "Goals",
         3,
         ["Improve Flexibility", "Improve Posture", "Better Sleep", "Stress Reduction", "Toning"],
     ),
     (
         "When do you want to achieve your goal?",
         "radio",
-        1,
+        "Goals",
         4,
         ["1 Month", "3 Months", "6 Months", "12 Months", "No Specific Timeline"],
     ),
-    ("Why do you want to achieve this goal?", "text", 1, 5, []),
+    ("Why do you want to achieve this goal?", "text", "Goals", 5, []),
 
-    # 2. Profile
-    ("What is your gender?", "radio", 2, 6, ["Male", "Female", "Prefer not to say"]),
-    ("What is your target weight?", "text", 2, 7, []),
+    # Profile
+    ("What is your gender?", "radio", "Profile", 6, ["Male", "Female", "Prefer not to say"]),
+    ("What is your target weight?", "text", "Profile", 7, []),
 
-    # 3. Training Experience
+    # Training Experience
     (
         "What is your workout experience?",
         "radio",
-        3,
+        "Training Experience",
         8,
         ["Beginner (0-6 months)", "Intermediate (6 months - 3 years)", "Advanced (3+ years)"],
     ),
     (
         "Have you trained consistently before?",
         "radio",
-        3,
+        "Training Experience",
         9,
         ["Never", "Occasionally", "Regularly", "Very Consistently"],
     ),
 
-    # 4. Availability
+    # Availability
     (
         "How many days per week can you train?",
         "radio",
-        4,
+        "Availability",
         10,
         ["2 Days", "3 Days", "4 Days", "5 Days", "6 Days", "7 Days"],
     ),
     (
         "Which days work best for you?",
         "checkbox",
-        4,
+        "Availability",
         11,
         ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
     ),
     (
         "Preferred session duration",
         "radio",
-        4,
+        "Availability",
         12,
         ["30 Minutes", "45 Minutes", "60 Minutes", "75 Minutes", "90+ Minutes"],
     ),
     (
         "Preferred workout time",
         "radio",
-        4,
+        "Availability",
         13,
         ["Early Morning", "Morning", "Afternoon", "Evening", "Late Night", "Flexible"],
     ),
 
-    # 5. Environment & Equipment
+    # Environment & Equipment
     (
         "Where will you train?",
         "radio",
-        5,
+        "Environment/Equip",
         14,
         ["Commercial Gym", "Home Gym", "Bodyweight Only", "Mixed"],
     ),
     (
         "What equipment do you have access to?",
         "checkbox",
-        5,
+        "Environment/Equip",
         15,
         [
             "Treadmill", "Bike", "Rowing Machine", "Dumbbells", "Adjustable Dumbbells", "Barbells",
@@ -193,87 +199,87 @@ GOAL_QUESTIONS = [
             "Kettlebells", "TRX", "Medicine Ball",
         ],
     ),
-    ("Any other equipment you have access to?", "text", 5, 16, []),
+    ("Any other equipment you have access to?", "text", "Environment/Equip", 16, []),
 
-    # 6. Lifestyle
+    # Lifestyle
     (
         "What best describes your daily activity?",
         "radio",
-        6,
+        "Lifestyle",
         17,
         ["Sedentary (Desk Job)", "Lightly Active", "Moderately Active", "Very Active", "Athlete / Physical Job"],
     ),
-    ("How stressful is your daily life?", "radio", 6, 18, ["Low", "Moderate", "High", "Very High"]),
+    ("How stressful is your daily life?", "radio", "Lifestyle", 18, ["Low", "Moderate", "High", "Very High"]),
     (
         "Average sleep duration",
         "radio",
-        6,
+        "Lifestyle",
         19,
         ["Less than 5 Hours", "5-6 Hours", "6-7 Hours", "7-8 Hours", "8+ Hours"],
     ),
-    ("Sleep quality", "radio", 6, 20, ["Poor", "Average", "Good", "Excellent"]),
+    ("Sleep quality", "radio", "Lifestyle", 20, ["Poor", "Average", "Good", "Excellent"]),
     (
         "Average daily water intake",
         "radio",
-        6,
+        "Lifestyle",
         21,
         ["Less than 1L", "1-2L", "2-3L", "3-4L", "4L+"],
     ),
 
-    # 7. Medical & Injury
+    # Medical & Injury
     (
         "Do you have any medical conditions?",
         "checkbox",
-        7,
+        "Medical & Injury",
         22,
         ["None", "Diabetes", "High Blood Pressure", "Asthma", "Heart Condition", "Thyroid Condition", "Arthritis", "Other"],
     ),
-    ("Additional details on any medical condition", "text", 7, 23, []),
+    ("Additional details on any medical condition", "text", "Medical & Injury", 23, []),
     (
         "Do you have any injuries or physical limitations?",
         "checkbox",
-        7,
+        "Medical & Injury",
         24,
         [
             "None", "Lower Back Pain", "Shoulder Pain", "Knee Pain", "Elbow Pain", "Wrist Pain",
             "Hip Pain", "Neck Pain", "Previous Surgery", "Other",
         ],
     ),
-    ("Describe your injuries or physical limitations", "text", 7, 25, []),
-    ("Which exercises should be avoided?", "text", 7, 26, []),
+    ("Describe your injuries or physical limitations", "text", "Medical & Injury", 25, []),
+    ("Which exercises should be avoided?", "text", "Medical & Injury", 26, []),
 
-    # 8. Diet
+    # Diet
     (
         "What is your diet preference?",
         "radio",
-        8,
+        "Diet",
         27,
         ["Vegetarian", "Vegan", "Eggetarian", "Non Vegetarian", "Pescatarian", "Keto", "Low Carb", "Mediterranean", "Other"],
     ),
     (
         "Do you have any food allergies?",
         "checkbox",
-        8,
+        "Diet",
         28,
         ["None", "Dairy", "Eggs", "Gluten", "Peanuts", "Tree Nuts", "Soy", "Seafood", "Shellfish", "Other"],
     ),
-    ("Any other allergies?", "text", 8, 29, []),
-    ("How many meals do you usually eat per day?", "radio", 8, 30, ["2", "3", "4", "5", "6+"]),
-    ("Are there any foods you dislike?", "text", 8, 31, []),
+    ("Any other allergies?", "text", "Diet", 29, []),
+    ("How many meals do you usually eat per day?", "radio", "Diet", 30, ["2", "3", "4", "5", "6+"]),
+    ("Are there any foods you dislike?", "text", "Diet", 31, []),
     (
         "Do you currently take any supplements?",
         "checkbox",
-        8,
+        "Diet",
         32,
         ["Whey Protein", "Creatine", "Pre Workout", "Multivitamin", "Fish Oil", "BCAA", "None", "Other"],
     ),
-    ("Any other supplements?", "text", 8, 33, []),
+    ("Any other supplements?", "text", "Diet", 33, []),
 
-    # 9. Preferences
+    # Preferences
     (
         "What type of workouts do you enjoy?",
         "checkbox",
-        9,
+        "Preferences",
         34,
         [
             "Traditional Weight Training", "Bodybuilding", "Powerlifting", "HIIT", "CrossFit",
@@ -283,24 +289,24 @@ GOAL_QUESTIONS = [
     (
         "What is your preferred cardio?",
         "checkbox",
-        9,
+        "Preferences",
         35,
         ["Running", "Walking", "Cycling", "Rowing", "Stair Climber", "Swimming", "Skip Rope", "None"],
     ),
 
-    # 10. AI Personalization
-    ("How aggressive should your program be?", "radio", 10, 36, ["Conservative", "Moderate", "Aggressive"]),
+    # AI Personalization
+    ("How aggressive should your program be?", "radio", "AI Personalization", 36, ["Conservative", "Moderate", "Aggressive"]),
     (
         "How much exercise variety do you prefer?",
         "radio",
-        10,
+        "AI Personalization",
         37,
         ["Same routine for weeks", "Moderate variation", "New exercises frequently"],
     ),
     (
         "How often should we check in on your progress?",
         "radio",
-        10,
+        "AI Personalization",
         38,
         ["Weekly", "Every 2 Weeks", "Monthly"],
     ),

@@ -17,6 +17,7 @@ from db.schemas.workout_exercises import WorkoutExercises
 from db.schemas.workout_exercise_details import WorkoutExerciseDetails
 from db.schemas.user_gyms import UserGyms
 from db.schemas.equipments import Equipments
+from db.schemas.categories import Categories
 
 __all__ = [
     "Users",
@@ -38,4 +39,5 @@ __all__ = [
     "WorkoutExerciseDetails",
     "UserGyms",
     "Equipments",
+    "Categories",
 ]

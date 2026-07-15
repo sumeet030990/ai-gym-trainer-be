@@ -12,6 +12,7 @@ from db.database import Async_session
 from db.schemas import (
     AiModels,
     AiProviders,
+    Categories,
     Equipments,
     Exercises,
     ExerciseEquipment,
@@ -25,6 +26,7 @@ from db.schemas import (
 from db.schemas.goal_questions import QUESTION_TYPE
 from db.seeders.seed_data import (
     AI_PROVIDERS,
+    CATEGORIES,
     EQUIPMENT,
     EXERCISES,
     GOAL_QUESTIONS,
@@ -60,6 +62,14 @@ async def seed_muscles(session: AsyncSession) -> dict[str, Muscles]:
         muscle, _ = await _get_or_create(session, Muscles, name=name)
         muscles[name] = muscle
     return muscles
+
+
+async def seed_categories(session: AsyncSession) -> dict[str, Categories]:
+    categories = {}
+    for sort_order, name in enumerate(CATEGORIES, start=1):
+        category, _ = await _get_or_create(session, Categories, name=name, defaults={"sort_order": sort_order})
+        categories[name] = category
+    return categories
 
 
 async def seed_ai_catalog(session: AsyncSession) -> None:
@@ -136,15 +146,16 @@ async def seed_exercises(
             )
 
 
-async def seed_goal_questions(session: AsyncSession) -> None:
-    for question_text, question_type, category, sort_order, options in GOAL_QUESTIONS:
+async def seed_goal_questions(session: AsyncSession, categories: dict[str, Categories]) -> None:
+    for question_text, question_type, category_name, sort_order, options in GOAL_QUESTIONS:
+        category = categories[category_name]
         question, _ = await _get_or_create(
             session,
             GoalQuestions,
             question=question_text,
             defaults={
                 "question_type": QUESTION_TYPE(question_type),
-                "category": category,
+                "category": category.id,
                 "sort_order": sort_order,
             },
         )
@@ -164,13 +175,14 @@ async def seed() -> None:
         async with session.begin():
             await seed_roles(session)
             muscles = await seed_muscles(session)
+            categories = await seed_categories(session)
             await seed_ai_catalog(session)
             gyms = await seed_gyms(session)
             main_gym = next(iter(gyms.values()))
             equipment_catalog = await seed_equipment_catalog(session)
             gym_equipment = await seed_gym_equipment(session, main_gym, equipment_catalog)
             await seed_exercises(session, muscles, gym_equipment)
-            await seed_goal_questions(session)
+            await seed_goal_questions(session, categories)
 
     print("Database seeding complete.")
 
