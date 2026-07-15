@@ -12,7 +12,14 @@ class DietType(enum.Enum):
     VEGETARIAN = "vegetarian"
     EGGETARIAN = "eggetarian"
     NON_VEGETARIAN = "non_vegetarian"
-    
+    VEGAN = "vegan"
+    PESCATARIAN = "pescatarian"
+    KETO = "keto"
+    LOW_CARB = "low_carb"
+    MEDITERRANEAN = "mediterranean"
+    OTHER = "other"
+
+
 class Users(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "users"
 
@@ -23,4 +30,4 @@ class Users(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     first_name: Mapped[str | None] = mapped_column(nullable=True)
     last_name: Mapped[str | None] = mapped_column(nullable=True)
     birth_date: Mapped[date | None] = mapped_column(nullable=True)
-    diet_type: Mapped[DietType] = mapped_column(default=DietType.NON_VEGETARIAN)
+    diet_type: Mapped[DietType] = mapped_column(default=DietType.VEGETARIAN)

@@ -22,3 +22,5 @@ class BodyMeasurements(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     right_arm_cm: Mapped[float | None] = mapped_column(nullable=True)
     left_thigh_cm: Mapped[float | None] = mapped_column(nullable=True)
     right_thigh_cm: Mapped[float | None] = mapped_column(nullable=True)
+    neck_cm: Mapped[float | None] = mapped_column(nullable=True)
+    body_fat_percent: Mapped[float | None] = mapped_column(nullable=True)
