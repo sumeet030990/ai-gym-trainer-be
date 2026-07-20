@@ -103,7 +103,7 @@ GOAL_QUESTIONS = [
     # Goals
     (
         "What is your primary fitness goal?",
-        "radio",
+        "checkbox",
         "Goals",
         1,
         [
@@ -112,40 +112,38 @@ GOAL_QUESTIONS = [
             "General Fitness", "Prepare for an Event", "Lean Body", "Custom Goal",
         ],
     ),
-    ("Describe your goal in your own words", "text", "Goals", 2, []),
     (
         "Any secondary goals?",
         "checkbox",
         "Goals",
-        3,
+        2,
         ["Improve Flexibility", "Improve Posture", "Better Sleep", "Stress Reduction", "Toning"],
     ),
     (
         "When do you want to achieve your goal?",
         "radio",
         "Goals",
-        4,
+        3,
         ["1 Month", "3 Months", "6 Months", "12 Months", "No Specific Timeline"],
     ),
-    ("Why do you want to achieve this goal?", "text", "Goals", 5, []),
-
+   
     # Profile
-    ("What is your gender?", "radio", "Profile", 6, ["Male", "Female", "Prefer not to say"]),
-    ("What is your target weight?", "text", "Profile", 7, []),
+    ("What is your gender?", "radio", "Profile", 4, ["Male", "Female", "Prefer not to say"]),
+    ("What is your target weight?", "text", "Profile", 5, []),
 
     # Training Experience
     (
         "What is your workout experience?",
         "radio",
         "Training Experience",
-        8,
+        6,
         ["Beginner (0-6 months)", "Intermediate (6 months - 3 years)", "Advanced (3+ years)"],
     ),
     (
         "Have you trained consistently before?",
         "radio",
         "Training Experience",
-        9,
+        7,
         ["Never", "Occasionally", "Regularly", "Very Consistently"],
     ),
 
@@ -154,28 +152,21 @@ GOAL_QUESTIONS = [
         "How many days per week can you train?",
         "radio",
         "Availability",
-        10,
+        8,
         ["2 Days", "3 Days", "4 Days", "5 Days", "6 Days", "7 Days"],
     ),
     (
         "Which days work best for you?",
         "checkbox",
         "Availability",
-        11,
+        9,
         ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    ),
-    (
-        "Preferred session duration",
-        "radio",
-        "Availability",
-        12,
-        ["30 Minutes", "45 Minutes", "60 Minutes", "75 Minutes", "90+ Minutes"],
     ),
     (
         "Preferred workout time",
         "radio",
         "Availability",
-        13,
+        10,
         ["Early Morning", "Morning", "Afternoon", "Evening", "Late Night", "Flexible"],
     ),
 
@@ -184,14 +175,14 @@ GOAL_QUESTIONS = [
         "Where will you train?",
         "radio",
         "Environment/Equip",
-        14,
-        ["Commercial Gym", "Home Gym", "Bodyweight Only", "Mixed"],
+        11,
+        ["Commercial Gym", "Home Gym", "Outdoor", "Other"],
     ),
     (
         "What equipment do you have access to?",
         "checkbox",
         "Environment/Equip",
-        15,
+        12,
         [
             "Treadmill", "Bike", "Rowing Machine", "Dumbbells", "Adjustable Dumbbells", "Barbells",
             "Weight Plates", "Bench", "Squat Rack", "Power Rack", "Smith Machine", "Cable Machine",
@@ -199,30 +190,30 @@ GOAL_QUESTIONS = [
             "Kettlebells", "TRX", "Medicine Ball",
         ],
     ),
-    ("Any other equipment you have access to?", "text", "Environment/Equip", 16, []),
+    ("Any other equipment you have access to?", "text", "Environment/Equip", 13, []),
 
     # Lifestyle
     (
         "What best describes your daily activity?",
         "radio",
         "Lifestyle",
-        17,
+        14,
         ["Sedentary (Desk Job)", "Lightly Active", "Moderately Active", "Very Active", "Athlete / Physical Job"],
     ),
-    ("How stressful is your daily life?", "radio", "Lifestyle", 18, ["Low", "Moderate", "High", "Very High"]),
+    ("How stressful is your daily life?", "radio", "Lifestyle", 15, ["Low", "Moderate", "High", "Very High"]),
     (
         "Average sleep duration",
         "radio",
         "Lifestyle",
-        19,
+        16,
         ["Less than 5 Hours", "5-6 Hours", "6-7 Hours", "7-8 Hours", "8+ Hours"],
     ),
-    ("Sleep quality", "radio", "Lifestyle", 20, ["Poor", "Average", "Good", "Excellent"]),
+    ("Sleep quality", "radio", "Lifestyle", 17, ["Poor", "Average", "Good", "Excellent"]),
     (
         "Average daily water intake",
         "radio",
         "Lifestyle",
-        21,
+        18,
         ["Less than 1L", "1-2L", "2-3L", "3-4L", "4L+"],
     ),
 
@@ -231,83 +222,56 @@ GOAL_QUESTIONS = [
         "Do you have any medical conditions?",
         "checkbox",
         "Medical & Injury",
-        22,
+        19,
         ["None", "Diabetes", "High Blood Pressure", "Asthma", "Heart Condition", "Thyroid Condition", "Arthritis", "Other"],
     ),
-    ("Additional details on any medical condition", "text", "Medical & Injury", 23, []),
+    ("Additional details on any medical condition", "text", "Medical & Injury", 20, []),
     (
         "Do you have any injuries or physical limitations?",
         "checkbox",
         "Medical & Injury",
-        24,
+        21,
         [
             "None", "Lower Back Pain", "Shoulder Pain", "Knee Pain", "Elbow Pain", "Wrist Pain",
             "Hip Pain", "Neck Pain", "Previous Surgery", "Other",
         ],
     ),
-    ("Describe your injuries or physical limitations", "text", "Medical & Injury", 25, []),
-    ("Which exercises should be avoided?", "text", "Medical & Injury", 26, []),
+    ("Describe your injuries or physical limitations", "text", "Medical & Injury", 22, []),
 
     # Diet
     (
         "What is your diet preference?",
         "radio",
         "Diet",
-        27,
+        23,
         ["Vegetarian", "Vegan", "Eggetarian", "Non Vegetarian", "Pescatarian", "Keto", "Low Carb", "Mediterranean", "Other"],
     ),
     (
         "Do you have any food allergies?",
         "checkbox",
         "Diet",
-        28,
+        24,
         ["None", "Dairy", "Eggs", "Gluten", "Peanuts", "Tree Nuts", "Soy", "Seafood", "Shellfish", "Other"],
     ),
-    ("Any other allergies?", "text", "Diet", 29, []),
-    ("How many meals do you usually eat per day?", "radio", "Diet", 30, ["2", "3", "4", "5", "6+"]),
-    ("Are there any foods you dislike?", "text", "Diet", 31, []),
+    ("Any other allergies?", "text", "Diet", 25, []),
+    ("How many meals do you usually eat per day?", "radio", "Diet", 26, ["2", "3", "4", "5", "6+"]),
+    ("Are there any foods you dislike?", "text", "Diet", 27, []),
     (
         "Do you currently take any supplements?",
         "checkbox",
         "Diet",
-        32,
+        28,
         ["Whey Protein", "Creatine", "Pre Workout", "Multivitamin", "Fish Oil", "BCAA", "None", "Other"],
     ),
-    ("Any other supplements?", "text", "Diet", 33, []),
-
-    # Preferences
-    (
-        "What type of workouts do you enjoy?",
-        "checkbox",
-        "Preferences",
-        34,
-        [
-            "Traditional Weight Training", "Bodybuilding", "Powerlifting", "HIIT", "CrossFit",
-            "Functional Training", "Cardio", "Calisthenics", "Circuit Training", "Yoga", "Pilates",
-        ],
-    ),
-    (
-        "What is your preferred cardio?",
-        "checkbox",
-        "Preferences",
-        35,
-        ["Running", "Walking", "Cycling", "Rowing", "Stair Climber", "Swimming", "Skip Rope", "None"],
-    ),
+    ("Any other supplements?", "text", "Diet", 29, []),
 
     # AI Personalization
-    ("How aggressive should your program be?", "radio", "AI Personalization", 36, ["Conservative", "Moderate", "Aggressive"]),
-    (
-        "How much exercise variety do you prefer?",
-        "radio",
-        "AI Personalization",
-        37,
-        ["Same routine for weeks", "Moderate variation", "New exercises frequently"],
-    ),
+    ("How aggressive should your program be?", "radio", "AI Personalization", 30, ["Conservative", "Moderate", "Aggressive"]),
     (
         "How often should we check in on your progress?",
         "radio",
         "AI Personalization",
-        38,
-        ["Weekly", "Every 2 Weeks", "Monthly"],
+        32,
+        ["Weekly", "Every 2 Weeks", "Every 3 Weeks", "Monthly"],
     ),
 ]

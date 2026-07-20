@@ -1,8 +1,9 @@
 from fastapi import Depends, HTTPException, status
-
-from app.repositories import user_repository, auth_repository
-from app.schemas.auth_schemas import UserUpdateRequest
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.repositories import user_repository, auth_repository, goal_questions_repository
+from app.schemas.auth_schemas import UserUpdateRequest
+from app.schemas.user_goal_answers_schema import UserGoalAnswersRequestSchema
 from db.database import get_session
 
 
@@ -46,3 +47,21 @@ async def delete_user_by_id(id: str, db_session: AsyncSession):
     
     result = await user_repository.delete_user(db_session, user)
     return result
+
+
+
+async def update_user_goals(user, payload: UserGoalAnswersRequestSchema, db_session: AsyncSession):
+    question = await goal_questions_repository.get_goal_question_by_id(db_session, payload.question_id)
+    if not question:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Goal question not found")
+
+    await user_repository.save_user_goal_answers(
+        db_session,
+        user.id,
+        payload.question_id,
+        [(answer.option_id, answer.answer_text) for answer in payload.answers],
+    )
+
+    return user
+
+ 

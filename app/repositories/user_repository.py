@@ -1,6 +1,9 @@
-from sqlalchemy import func, select
+import uuid
+
+from sqlalchemy import delete, func, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from db.schemas.user_goal_answer import UserGoalAnswers
 from db.schemas.users import Users
 
 
@@ -32,6 +35,42 @@ async def delete_user(db_session: AsyncSession, user: Users) -> bool:
         await db_session.delete(user)
         await db_session.commit()
         return True
+    except Exception as e:
+        await db_session.rollback()
+        raise e
+
+
+async def save_user_goal_answers(
+    db_session: AsyncSession,
+    user_id: uuid.UUID,
+    question_id: uuid.UUID,
+    answers: list[tuple[uuid.UUID | None, str | None]],
+) -> list[UserGoalAnswers]:
+    try:
+        await db_session.execute(
+            delete(UserGoalAnswers).where(
+                UserGoalAnswers.user_id == user_id,
+                UserGoalAnswers.question_id == question_id,
+            )
+        )
+        
+        result =  await db_session.scalar(
+            insert(UserGoalAnswers),
+            [
+                {
+                    "user_id": user_id,
+                    "question_id": question_id,
+                    "option_id": option_id,
+                    "answer_text": answer_text,
+                }
+                for option_id, answer_text in answers
+            ],
+        )
+
+       
+        await db_session.commit()
+        
+        return result
     except Exception as e:
         await db_session.rollback()
         raise e

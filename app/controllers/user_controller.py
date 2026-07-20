@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.auth_schemas import UserRegisterResponse, UserUpdateRequest
 from app.schemas.common_schemas import PaginatedResponse, PaginationMeta
+from app.schemas.user_goal_answers_schema import UserGoalAnswersRequestSchema
 from app.services import user_service
 
 
@@ -38,3 +39,13 @@ async def delete_user_by_id(id: str, db_session: AsyncSession) -> dict:
    result = await user_service.delete_user_by_id(id, db_session)
   
    return {"message": "User deleted successfully"}
+
+
+
+async def update_user_goals(auth_user: UserRegisterResponse, payload: UserGoalAnswersRequestSchema, db_session: AsyncSession):
+    user = await user_service.get_user_by_id(str(auth_user.id), db_session)
+    if not user:
+        raise ValueError("User not found")
+    user = await user_service.update_user_goals(user, payload, db_session)
+    return UserRegisterResponse.model_validate(user)
+    
