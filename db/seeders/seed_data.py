@@ -1,8 +1,9 @@
 """Static reference data used to seed the database.
 
-This is real, hand-curated reference data (roles, muscle groups, standard gym
-equipment, common exercises, onboarding questions, and AI provider/model
-catalogs) -- not synthetic/fake test data and not user PII.
+Most of this is real, hand-curated reference data (roles, muscle groups,
+standard gym equipment, common exercises, onboarding questions, and AI
+provider/model catalogs). USERS is the exception: synthetic placeholder
+data for local dev/testing, not a real person.
 """
 
 ROLES = ["Admin", "Trainer", "User"]
@@ -50,6 +51,21 @@ GYMS = [
         "location": "Default Location",
         "contact_number": None,
         "owner_name": "Pranay",
+    }
+]
+
+# Synthetic dev/test user -- placeholder contact details, not a real person.
+# Password is hashed by the seeder before insert; never store plaintext.
+USERS = [
+    {
+        "email": "sumeet@example.com",
+        "mobile_no": "9999999999",
+        "password": "password",
+        "first_name": "Test",
+        "last_name": "User",
+        "birth_date": "1990-01-01",
+        "diet_type": "non_vegetarian",
+        "role_name": "User",
     }
 ]
 

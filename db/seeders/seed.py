@@ -4,10 +4,12 @@ Run with:
     uv run python -m db.seeders.seed
 """
 import asyncio
+from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.security import hash_password
 from db.database import Async_session
 from db.schemas import (
     AiModels,
@@ -22,8 +24,10 @@ from db.schemas import (
     Gyms,
     Muscles,
     Roles,
+    Users,
 )
 from db.schemas.goal_questions import QUESTION_TYPE
+from db.schemas.users import DietType
 from db.seeders.seed_data import (
     AI_PROVIDERS,
     CATEGORIES,
@@ -33,6 +37,7 @@ from db.seeders.seed_data import (
     GYMS,
     MUSCLES,
     ROLES,
+    USERS,
 )
 
 
@@ -146,6 +151,25 @@ async def seed_exercises(
             )
 
 
+async def seed_users(session: AsyncSession, roles: dict[str, Roles]) -> None:
+    for user_data in USERS:
+        role = roles[user_data["role_name"]]
+        await _get_or_create(
+            session,
+            Users,
+            mobile_no=user_data["mobile_no"],
+            defaults={
+                "role_id": role.id,
+                "email": user_data["email"],
+                "password": hash_password(user_data["password"]),
+                "first_name": user_data["first_name"],
+                "last_name": user_data["last_name"],
+                "birth_date": date.fromisoformat(user_data["birth_date"]),
+                "diet_type": DietType(user_data["diet_type"]),
+            },
+        )
+
+
 async def seed_goal_questions(session: AsyncSession, categories: dict[str, Categories]) -> None:
     for question_text, question_type, category_name, sort_order, options in GOAL_QUESTIONS:
         category = categories[category_name]
@@ -173,7 +197,7 @@ async def seed_goal_questions(session: AsyncSession, categories: dict[str, Categ
 async def seed() -> None:
     async with Async_session() as session:
         async with session.begin():
-            await seed_roles(session)
+            roles = await seed_roles(session)
             muscles = await seed_muscles(session)
             categories = await seed_categories(session)
             await seed_ai_catalog(session)
@@ -183,6 +207,7 @@ async def seed() -> None:
             gym_equipment = await seed_gym_equipment(session, main_gym, equipment_catalog)
             await seed_exercises(session, muscles, gym_equipment)
             await seed_goal_questions(session, categories)
+            await seed_users(session, roles)
 
     print("Database seeding complete.")
 

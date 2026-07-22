@@ -43,34 +43,45 @@ async def delete_user(db_session: AsyncSession, user: Users) -> bool:
 async def save_user_goal_answers(
     db_session: AsyncSession,
     user_id: uuid.UUID,
-    question_id: uuid.UUID,
-    answers: list[tuple[uuid.UUID | None, str | None]],
+   data: list[dict],
 ) -> list[UserGoalAnswers]:
     try:
         await db_session.execute(
             delete(UserGoalAnswers).where(
                 UserGoalAnswers.user_id == user_id,
-                UserGoalAnswers.question_id == question_id,
             )
         )
         
-        result =  await db_session.scalar(
-            insert(UserGoalAnswers),
+        result = await db_session.execute(
+            insert(UserGoalAnswers).returning(UserGoalAnswers),
             [
                 {
                     "user_id": user_id,
-                    "question_id": question_id,
-                    "option_id": option_id,
-                    "answer_text": answer_text,
+                    "question_id": item["question_id"],
+                    "option_id": item.get("option_id"),
+                    "answer_text": item.get("answer_text"),
                 }
-                for option_id, answer_text in answers
+                for item in data
             ],
         )
 
-       
+        goal_answers = list(result.scalars().all())
+
+        await db_session.commit()
+
+        return goal_answers
+    except Exception as e:
+        await db_session.rollback()
+        raise e
+    
+async def delete_user_goal_answers(db_session: AsyncSession, user_id: uuid.UUID) -> bool:
+    try:
+        await db_session.execute(
+            delete(UserGoalAnswers).where(UserGoalAnswers.user_id == user_id)
+        )
         await db_session.commit()
         
-        return result
+        return True
     except Exception as e:
         await db_session.rollback()
         raise e

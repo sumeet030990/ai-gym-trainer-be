@@ -44,3 +44,10 @@ async def update_user_goals(
     db_session=Depends(get_session),
 ):
     return await user_controller.update_user_goals(auth_user, payload, db_session)
+
+@router.delete("/profile/goals")
+async def delete_user_goal_answers(
+    auth_user=Depends(is_user_authenticated),
+    db_session=Depends(get_session),
+):
+    return await user_controller.delete_user_goal_answers(auth_user, db_session)

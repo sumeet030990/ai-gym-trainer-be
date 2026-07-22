@@ -5,6 +5,7 @@ from app.schemas.auth_schemas import UserRegisterResponse, UserUpdateRequest
 from app.schemas.common_schemas import PaginatedResponse, PaginationMeta
 from app.schemas.user_goal_answers_schema import UserGoalAnswersRequestSchema
 from app.services import user_service
+from db.schemas.user_goal_answer import UserGoalAnswers
 
 
 async def get_all_users(db_session: AsyncSession, page: int = 1, page_size: int = 20) -> PaginatedResponse[UserRegisterResponse]:
@@ -42,10 +43,20 @@ async def delete_user_by_id(id: str, db_session: AsyncSession) -> dict:
 
 
 
-async def update_user_goals(auth_user: UserRegisterResponse, payload: UserGoalAnswersRequestSchema, db_session: AsyncSession):
+async def update_user_goals(auth_user: UserRegisterResponse, payload: UserGoalAnswersRequestSchema, db_session: AsyncSession) -> list[UserGoalAnswers]:
+    """ Update user goals based on the provided payload and authenticated user."""
     user = await user_service.get_user_by_id(str(auth_user.id), db_session)
     if not user:
         raise ValueError("User not found")
-    user = await user_service.update_user_goals(user, payload, db_session)
-    return UserRegisterResponse.model_validate(user)
+
+    result = await user_service.update_user_goals(user, payload, db_session)
+
+    return result
     
+
+async def delete_user_goal_answers(auth_user: UserRegisterResponse, db_session: AsyncSession)-> dict:
+    user = await user_service.get_user_by_id(str(auth_user.id), db_session)
+    if not user:
+        raise ValueError("User not found")
+    user = await user_service.delete_user_goal_answers(user, db_session)
+    return {"message": "User goal answers deleted successfully"}

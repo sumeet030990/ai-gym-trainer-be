@@ -5,6 +5,7 @@ from app.repositories import user_repository, auth_repository, goal_questions_re
 from app.schemas.auth_schemas import UserUpdateRequest
 from app.schemas.user_goal_answers_schema import UserGoalAnswersRequestSchema
 from db.database import get_session
+from db.schemas.user_goal_answer import UserGoalAnswers
 
 
 async def get_all_users(db_session: AsyncSession, page: int, page_size: int):
@@ -50,18 +51,26 @@ async def delete_user_by_id(id: str, db_session: AsyncSession):
 
 
 
-async def update_user_goals(user, payload: UserGoalAnswersRequestSchema, db_session: AsyncSession):
-    question = await goal_questions_repository.get_goal_question_by_id(db_session, payload.question_id)
-    if not question:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Goal question not found")
+async def update_user_goals(user, payload: UserGoalAnswersRequestSchema, db_session: AsyncSession) -> list[UserGoalAnswers]:
+    data = [
+        {
+            "user_id": user.id,
+            "question_id": question.question_id,
+            "option_id": answer.option_id,
+            "answer_text": answer.answer_text,
+        }
+        for question in payload.user_goals
+        for answer in question.answers
+    ]
 
-    await user_repository.save_user_goal_answers(
+    result = await user_repository.save_user_goal_answers(
         db_session,
         user.id,
-        payload.question_id,
-        [(answer.option_id, answer.answer_text) for answer in payload.answers],
+        data
     )
+    
+    return result
 
-    return user
-
- 
+async def delete_user_goal_answers(user, db_session: AsyncSession) -> bool:
+    result = await user_repository.delete_user_goal_answers(db_session, user.id)
+    return result
