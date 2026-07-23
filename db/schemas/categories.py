@@ -1,7 +1,12 @@
-from sqlalchemy.orm import Mapped, mapped_column
+from typing import TYPE_CHECKING
+
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.database import Base
 from db.mixins import TimestampMixin, UUIDPrimaryKeyMixin
+
+if TYPE_CHECKING:
+    from db.schemas.goal_questions import GoalQuestions
 
 
 class Categories(UUIDPrimaryKeyMixin, TimestampMixin, Base):

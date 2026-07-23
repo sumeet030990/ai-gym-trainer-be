@@ -8,6 +8,6 @@ router = APIRouter(prefix="/questions", tags=["Questions"])
 
 
 @router.get("/")
-async def get_all_questions(db_session=Depends(get_session)):
-    return await goal_questions_controller.get_all_goal_questions(db_session)
+async def get_all_questions(category_id: str|None = None, db_session=Depends(get_session)):
+    return await goal_questions_controller.get_all_goal_questions(category_id, db_session)
 

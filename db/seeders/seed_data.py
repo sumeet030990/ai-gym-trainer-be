@@ -6,7 +6,7 @@ provider/model catalogs). USERS is the exception: synthetic placeholder
 data for local dev/testing, not a real person.
 """
 
-ROLES = ["Admin", "Trainer", "User"]
+ROLES = ["Admin", "Trainer", "User", "Gym Owner"]
 
 MUSCLES = [
     ("Chest"),

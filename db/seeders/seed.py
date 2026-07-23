@@ -179,7 +179,7 @@ async def seed_goal_questions(session: AsyncSession, categories: dict[str, Categ
             question=question_text,
             defaults={
                 "question_type": QUESTION_TYPE(question_type),
-                "category": category.id,
+                "category_id": category.id,
                 "sort_order": sort_order,
             },
         )
