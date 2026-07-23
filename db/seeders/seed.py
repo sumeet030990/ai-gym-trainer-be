@@ -26,6 +26,7 @@ from db.schemas import (
     Roles,
     Users,
 )
+from db.schemas.exercises import LEVEL
 from db.schemas.goal_questions import QUESTION_TYPE
 from db.schemas.users import DietType
 from db.seeders.seed_data import (
@@ -126,7 +127,7 @@ async def seed_exercises(
     muscles: dict[str, Muscles],
     gym_equipment: dict[str, GymEquipments],
 ) -> None:
-    for name, description, muscle_name, primary_equipment_name, extra_equipment_names in EXERCISES:
+    for name, description, muscle_name, primary_equipment_name, extra_equipment_names, level in EXERCISES:
         muscle = muscles[muscle_name]
         primary_equipment = gym_equipment[primary_equipment_name] if primary_equipment_name else None
 
@@ -138,6 +139,7 @@ async def seed_exercises(
                 "description": description,
                 "muscle_id": muscle.id,
                 "equipment_id": primary_equipment.id if primary_equipment else None,
+                "excercise_level": LEVEL(level),
             },
         )
 
