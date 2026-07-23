@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -14,3 +14,6 @@ class Categories(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     name: Mapped[str] = mapped_column(nullable=False)
     sort_order: Mapped[int | None] = mapped_column(nullable=True)
+    questions: Mapped[List["GoalQuestions"]] = relationship(
+        "GoalQuestions", back_populates="category", order_by="GoalQuestions.sort_order"
+    )

@@ -25,3 +25,9 @@ class GoalQuestionResponse(BaseModel):
     category: CategoryResponse | None
     sort_order: int | None
     options: list[GoalQuestionOptionResponse]
+
+class GoalQuestionsByCategoryResponse(BaseModel):
+    """Goal questions grouped by their category."""
+
+    category: CategoryResponse | None
+    questions: list[GoalQuestionResponse]
