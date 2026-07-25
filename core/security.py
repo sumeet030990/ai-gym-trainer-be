@@ -1,6 +1,6 @@
 from typing_extensions import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.services import user_service
+from app.services import user_services
 from db.database import get_session
 from fastapi import HTTPException
 from fastapi import Depends
@@ -46,7 +46,7 @@ async def is_user_authenticated(token: Annotated[str, Depends(oauth2_scheme)], d
             if user_name is None:
                 raise HTTPException(status_code=401, detail="Invalid token: missing user identifier")
             
-            user_data = await user_service.get_user_by_mobile_or_email(user_name, db_session)
+            user_data = await user_services.get_user_by_mobile_or_email(user_name, db_session)
             if user_data is None:
                 raise HTTPException(status_code=401, detail="Invalid token")
             return user_data

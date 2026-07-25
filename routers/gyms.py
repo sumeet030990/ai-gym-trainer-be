@@ -30,3 +30,8 @@ async def update_gym(gym_id: str, gym_data: dict, auth_user=Depends(is_user_auth
 @router.delete("/{gym_id}")
 async def delete_gym(gym_id: str, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
     return await gyms_controller.delete_gym(gym_id, db_session)
+
+
+@router.get("/{gym_id}/users")
+async def get_gym_users(gym_id: str, user_role_id: str | None = None, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
+    return await gyms_controller.get_gym_users(gym_id, user_role_id, db_session)

@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.repositories import user_repository, auth_repository, goal_questions_repository
+from app.repositories import user_repository, auth_repository
 from app.schemas.auth_schemas import UserUpdateRequest
 from app.schemas.user_goal_answers_schema import UserGoalAnswersRequestSchema
 from db.database import get_session
@@ -74,3 +74,6 @@ async def update_user_goals(user, payload: UserGoalAnswersRequestSchema, db_sess
 async def delete_user_goal_answers(user, db_session: AsyncSession) -> bool:
     result = await user_repository.delete_user_goal_answers(db_session, user.id)
     return result
+
+async def get_gym_users(gym_id: str, user_role_id: str | None, db_session: AsyncSession):
+    return await user_repository.get_gym_users(gym_id, user_role_id, db_session)

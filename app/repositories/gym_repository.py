@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from db.schemas import Gyms
 from sqlalchemy import select
 
+
 async def get_all_gyms(db_session: AsyncSession, page: int, page_size: int) -> tuple[list[Gyms], int]:
     try:
         total = await db_session.execute(select(Gyms))
