@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from routers.users import router as users_router
 from routers.auth import router as auth_router
 from routers.questions import router as questions_router
-from routers.gym import router as gyms_router
+from routers.gyms import router as gyms_router
 api_router = APIRouter()
 
 api_router.include_router(users_router)
