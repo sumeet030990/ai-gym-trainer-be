@@ -3,10 +3,11 @@ import enum
 import uuid
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from db.database import Base
 from db.mixins import TimestampMixin, UUIDPrimaryKeyMixin
+from db.schemas.roles import Roles
 
 class DietType(enum.Enum):
     VEGETARIAN = "vegetarian"
@@ -35,3 +36,5 @@ class Users(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     birth_date: Mapped[date | None] = mapped_column(nullable=True)
     sex: Mapped[str | None] = mapped_column(nullable=True)
     diet_type: Mapped[DietType] = mapped_column(default=DietType.VEGETARIAN)
+    
+    role: Mapped[Roles] = relationship("Roles", foreign_keys=[role_id])

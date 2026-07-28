@@ -1,6 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from db.schemas import Gyms
+from db.schemas.users import Users
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 
 async def get_all_gyms(db_session: AsyncSession, page: int, page_size: int) -> tuple[list[Gyms], int]:
@@ -21,7 +23,11 @@ async def get_all_gyms(db_session: AsyncSession, page: int, page_size: int) -> t
       
 async def get_gym_by_id(gym_id: str, db_session: AsyncSession) -> Gyms:
   try:
-      result = await db_session.execute(select(Gyms).where(Gyms.id == gym_id))
+      result = await db_session.execute(
+          select(Gyms)
+          .options(selectinload(Gyms.owner_data).selectinload(Users.role))
+          .where(Gyms.id == gym_id)
+      )
       gym = result.scalars().first()
       
       if not gym:
