@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-
+from app.schemas.user_schemas import UserRegisterResponse
 from app.controllers import gyms_controller
 from core.security import is_user_authenticated
 from db.database import get_session
@@ -33,8 +33,11 @@ async def delete_gym(gym_id: str, auth_user=Depends(is_user_authenticated), db_s
 
 
 @router.get("/{gym_id}/users")
-async def get_gym_users(gym_id: str, user_role_id: str | None = None, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
-    return await gyms_controller.get_gym_users(gym_id, user_role_id, db_session)
+async def get_gym_users(gym_id: str, user_role_id: str | None = None, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session))-> list[UserRegisterResponse]:
+    result =  await gyms_controller.get_gym_users(gym_id, user_role_id, db_session)
+    
+    
+    return [UserRegisterResponse.model_validate(user) for user in result]
 
 
 @router.post("/{gym_id}/assign_user")

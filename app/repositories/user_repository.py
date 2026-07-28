@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import delete, func, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from db.schemas.user_goal_answer import UserGoalAnswers
 from db.schemas.user_gyms import UserGyms
@@ -93,7 +94,7 @@ async def delete_user_goal_answers(db_session: AsyncSession, user_id: uuid.UUID)
 async def get_gym_users(gym_id: str, user_role_id: str | None, db_session: AsyncSession):
     try:
         stmt = (
-            select(Users)
+            select(Users).options(selectinload(Users.role))
             .join(UserGyms, UserGyms.user_id == Users.id)
             .where(UserGyms.gym_id == gym_id)
         )
