@@ -35,3 +35,8 @@ async def delete_gym(gym_id: str, auth_user=Depends(is_user_authenticated), db_s
 @router.get("/{gym_id}/users")
 async def get_gym_users(gym_id: str, user_role_id: str | None = None, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
     return await gyms_controller.get_gym_users(gym_id, user_role_id, db_session)
+
+
+@router.post("/{gym_id}/assign_user")
+async def assign_user_to_gym(gym_id: str, payload: dict, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
+    return await gyms_controller.assign_user_to_gym(gym_id, payload, db_session)

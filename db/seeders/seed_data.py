@@ -49,8 +49,7 @@ GYMS = [
     {
         "name": "Hammer",
         "location": "Default Location",
-        "contact_number": None,
-        "owner_name": "Pranay",
+        "owner_email": "pranay@example.com",
     }
 ]
 
@@ -58,15 +57,61 @@ GYMS = [
 # Password is hashed by the seeder before insert; never store plaintext.
 USERS = [
     {
-        "email": "sumeet@example.com",
+        "email": "sumeet.030990@gmail.com",
         "mobile_no": "9999999999",
         "password": "password",
-        "first_name": "Test",
+        "first_name": "Sumeet",
+        "last_name": "Admin",
+        "birth_date": "1990-01-01",
+        "diet_type": "non_vegetarian",
+        "role_name": "Admin",
+        "sex": "male"
+    },
+    {
+        "email": "pranay@example.com",
+        "mobile_no": "9999999991",
+        "password": "password",
+        "first_name": "Pranay",
+        "last_name": "GymOwner",
+        "birth_date": "1990-01-01",
+        "diet_type": "non_vegetarian",
+        "role_name": "Gym Owner",
+        "sex": "male"
+    },
+    {
+        "email": "vivek@example.com",
+        "mobile_no": "9999999992",
+        "password": "password",
+        "first_name": "Vivek",
+        "last_name": "Trainer",
+        "birth_date": "1990-01-01",
+        "diet_type": "non_vegetarian",
+        "role_name": "Trainer",
+        "sex": "male"
+    },
+    {
+        "email": "user1@example.com",
+        "mobile_no": "9999999993",
+        "password": "password",
+        "first_name": "User1",
         "last_name": "User",
         "birth_date": "1990-01-01",
         "diet_type": "non_vegetarian",
         "role_name": "User",
-    }
+        "sex": "male"
+    },
+    {
+        "email": "user2@example.com",
+        "mobile_no": "9999999994",
+        "password": "password",
+        "first_name": "User2",
+        "last_name": "User",
+        "birth_date": "1990-01-01",
+        "diet_type": "non_vegetarian",
+        "role_name": "User",
+        "sex": "male"
+    },
+    
 ]
 
 EQUIPMENT = [

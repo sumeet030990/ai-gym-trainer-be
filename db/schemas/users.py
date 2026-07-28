@@ -19,7 +19,10 @@ class DietType(enum.Enum):
     MEDITERRANEAN = "mediterranean"
     OTHER = "other"
 
-
+class UserSex(enum.Enum):
+    MALE = "male"
+    FEMALE = "female"
+    OTHER = "other"
 class Users(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "users"
 
@@ -30,4 +33,5 @@ class Users(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     first_name: Mapped[str | None] = mapped_column(nullable=True)
     last_name: Mapped[str | None] = mapped_column(nullable=True)
     birth_date: Mapped[date | None] = mapped_column(nullable=True)
+    sex: Mapped[str | None] = mapped_column(nullable=True)
     diet_type: Mapped[DietType] = mapped_column(default=DietType.VEGETARIAN)

@@ -85,17 +85,18 @@ async def seed_ai_catalog(session: AsyncSession) -> None:
             await _get_or_create(session, AiModels, name=model_name, ai_provider_id=provider.id)
 
 
-async def seed_gyms(session: AsyncSession) -> dict[str, Gyms]:
+async def seed_gyms(session: AsyncSession, users: dict[str, Users]) -> dict[str, Gyms]:
     gyms = {}
     for gym_data in GYMS:
+        owner_email = gym_data.get("owner_email")
+        owner = users[owner_email] if owner_email else None
         gym, _ = await _get_or_create(
             session,
             Gyms,
             name=gym_data["name"],
             defaults={
                 "location": gym_data["location"],
-                "contact_number": gym_data["contact_number"],
-                "owner_name": gym_data["owner_name"],
+                "owner_user_id": owner.id if owner else None,
             },
         )
         gyms[gym.name] = gym
@@ -153,10 +154,11 @@ async def seed_exercises(
             )
 
 
-async def seed_users(session: AsyncSession, roles: dict[str, Roles]) -> None:
+async def seed_users(session: AsyncSession, roles: dict[str, Roles]) -> dict[str, Users]:
+    users = {}
     for user_data in USERS:
         role = roles[user_data["role_name"]]
-        await _get_or_create(
+        user, _ = await _get_or_create(
             session,
             Users,
             mobile_no=user_data["mobile_no"],
@@ -167,9 +169,12 @@ async def seed_users(session: AsyncSession, roles: dict[str, Roles]) -> None:
                 "first_name": user_data["first_name"],
                 "last_name": user_data["last_name"],
                 "birth_date": date.fromisoformat(user_data["birth_date"]),
+                "sex": user_data["sex"],
                 "diet_type": DietType(user_data["diet_type"]),
             },
         )
+        users[user.email] = user
+    return users
 
 
 async def seed_goal_questions(session: AsyncSession, categories: dict[str, Categories]) -> None:
@@ -203,13 +208,13 @@ async def seed() -> None:
             muscles = await seed_muscles(session)
             categories = await seed_categories(session)
             await seed_ai_catalog(session)
-            gyms = await seed_gyms(session)
+            users = await seed_users(session, roles)
+            gyms = await seed_gyms(session, users)
             main_gym = next(iter(gyms.values()))
             equipment_catalog = await seed_equipment_catalog(session)
             gym_equipment = await seed_gym_equipment(session, main_gym, equipment_catalog)
             await seed_exercises(session, muscles, gym_equipment)
             await seed_goal_questions(session, categories)
-            await seed_users(session, roles)
 
     print("Database seeding complete.")
 
