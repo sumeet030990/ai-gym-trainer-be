@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.schemas.auth_schemas import UserRegisterResponse, UserUpdateRequest
 from app.schemas.common_schemas import PaginatedResponse, PaginationMeta
-from app.schemas.user_goal_answers_schema import UserGoalAnswersRequestSchema
+from app.schemas.user_goal_answers_schema import UserGoalAnswerGroupSchema, UserGoalAnswersRequestSchema
 from app.services import user_services
 from db.schemas.user_goal_answer import UserGoalAnswers
 
@@ -41,6 +41,10 @@ async def delete_user_by_id(id: str, db_session: AsyncSession) -> dict:
   
    return {"message": "User deleted successfully"}
 
+
+async def get_user_goals(auth_user: UserRegisterResponse, db_session: AsyncSession)-> list[UserGoalAnswerGroupSchema]:
+    
+    return await user_services.get_user_goals(auth_user, db_session)
 
 
 async def update_user_goals(auth_user: UserRegisterResponse, payload: UserGoalAnswersRequestSchema, db_session: AsyncSession) -> list[UserGoalAnswers]:

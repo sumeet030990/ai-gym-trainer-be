@@ -426,3 +426,36 @@ GOAL_QUESTIONS = [
         ["Weekly", "Every 2 Weeks", "Every 3 Weeks", "Monthly"],
     ),
 ]
+
+# Onboarding answers for the synthetic dev/test user above.
+# Each answer references a question by its exact text from GOAL_QUESTIONS above,
+# plus either "options" (a list of option labels, for radio/checkbox questions,
+# one row per label) or "answer_text" (for free-text questions).
+USER_GOAL_ANSWERS = [
+    {
+        "user_email": "sumeet.030990@gmail.com",
+        "answers": [
+            {"question": "What is your primary fitness goal?", "options": ["Lose Weight", "Lose Body Fat", "Lean Body"]},
+            {"question": "Any secondary goals?", "options": ["Toning"]},
+            {"question": "When do you want to achieve your goal?", "options": ["12 Months"]},
+            {"question": "What is your gender?", "options": ["Male"]},
+            {"question": "What is your target weight?", "answer_text": "75"},
+            {"question": "What is your workout experience?", "options": ["Beginner (0-6 months)"]},
+            {"question": "Have you trained consistently before?", "options": ["Never"]},
+            {"question": "How many days per week can you train?", "options": ["6 Days"]},
+            {"question": "Which days work best for you?", "options": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]},
+            {"question": "Preferred workout time", "options": ["Evening"]},
+            {"question": "Where will you train?", "options": ["Commercial Gym"]},
+            {"question": "Do you have any medical conditions?", "options": ["None"]},
+            {"question": "What is your diet preference?", "options": ["Non Vegetarian"]},
+            {"question": "Do you have any food allergies?", "options": ["None"]},
+            {"question": "How many meals do you usually eat per day?", "options": ["2"]},
+            {"question": "How aggressive should your program be?", "options": ["Moderate"]},
+            {"question": "How often should we check in on your progress?", "options": ["Weekly"]},
+        ],
+    },
+]
+
+# No reported medical/injury conditions for the synthetic dev/test user, so this
+# is intentionally empty for now -- add entries here as {"user_email", "condition_name", "notes"}.
+USER_CONDITIONS = []

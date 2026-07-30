@@ -22,6 +22,12 @@ async def get_user_by_id(db_session: AsyncSession, id: str) -> Users | None:
     result = await db_session.execute(select(Users).where(Users.id == id))
     return result.scalar_one_or_none()
 
+async def get_user_goals(db_session: AsyncSession, user_id: uuid.UUID) :
+    result = await db_session.execute(
+        select(UserGoalAnswers).where(UserGoalAnswers.user_id == user_id).options(selectinload(UserGoalAnswers.option), selectinload(UserGoalAnswers.question))
+    )
+    return list(result.scalars().all())
+
 async def update_user(db_session: AsyncSession, user: Users) -> Users:
     try:
         await db_session.commit()

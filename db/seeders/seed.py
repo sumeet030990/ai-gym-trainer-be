@@ -24,6 +24,8 @@ from db.schemas import (
     Gyms,
     Muscles,
     Roles,
+    UserConditions,
+    UserGoalAnswers,
     Users,
 )
 from db.schemas.exercises import LEVEL
@@ -38,6 +40,8 @@ from db.seeders.seed_data import (
     GYMS,
     MUSCLES,
     ROLES,
+    USER_CONDITIONS,
+    USER_GOAL_ANSWERS,
     USERS,
 )
 
@@ -177,7 +181,10 @@ async def seed_users(session: AsyncSession, roles: dict[str, Roles]) -> dict[str
     return users
 
 
-async def seed_goal_questions(session: AsyncSession, categories: dict[str, Categories]) -> None:
+async def seed_goal_questions(
+    session: AsyncSession, categories: dict[str, Categories]
+) -> dict[str, tuple[GoalQuestions, dict[str, GoalQuestionOptions]]]:
+    questions = {}
     for question_text, question_type, category_name, sort_order, options in GOAL_QUESTIONS:
         category = categories[category_name]
         question, _ = await _get_or_create(
@@ -191,14 +198,67 @@ async def seed_goal_questions(session: AsyncSession, categories: dict[str, Categ
             },
         )
 
+        question_options = {}
         for option_sort_order, label in enumerate(options):
-            await _get_or_create(
+            option, _ = await _get_or_create(
                 session,
                 GoalQuestionOptions,
                 question_id=question.id,
                 label=label,
                 defaults={"sort_order": option_sort_order},
             )
+            question_options[label] = option
+
+        questions[question_text] = (question, question_options)
+    return questions
+
+
+async def _get_user_by_email(session: AsyncSession, email: str) -> Users:
+    user = (await session.execute(select(Users).filter_by(email=email))).scalar_one_or_none()
+    if user is None:
+        raise ValueError(f"No user found with email {email!r}; create the user first (e.g. via seed_users or signup).")
+    return user
+
+
+async def seed_user_goal_answers(
+    session: AsyncSession,
+    questions: dict[str, tuple[GoalQuestions, dict[str, GoalQuestionOptions]]],
+) -> None:
+    for entry in USER_GOAL_ANSWERS:
+        user = await _get_user_by_email(session, entry["user_email"])
+        for answer in entry["answers"]:
+            question, question_options = questions[answer["question"]]
+            if "answer_text" in answer:
+                await _get_or_create(
+                    session,
+                    UserGoalAnswers,
+                    user_id=user.id,
+                    question_id=question.id,
+                    option_id=None,
+                    defaults={"answer_text": answer["answer_text"]},
+                )
+            else:
+                for label in answer["options"]:
+                    option = question_options[label]
+                    await _get_or_create(
+                        session,
+                        UserGoalAnswers,
+                        user_id=user.id,
+                        question_id=question.id,
+                        option_id=option.id,
+                    )
+
+
+async def seed_user_conditions(session: AsyncSession) -> None:
+    for entry in USER_CONDITIONS:
+        user = await _get_user_by_email(session, entry["user_email"])
+        await _get_or_create(
+            session,
+            UserConditions,
+            user_id=user.id,
+            condition_name=entry["condition_name"],
+            defaults={"notes": entry.get("notes")},
+        )
 
 
 async def seed() -> None:
@@ -214,7 +274,9 @@ async def seed() -> None:
             equipment_catalog = await seed_equipment_catalog(session)
             gym_equipment = await seed_gym_equipment(session, main_gym, equipment_catalog)
             await seed_exercises(session, muscles, gym_equipment)
-            await seed_goal_questions(session, categories)
+            questions = await seed_goal_questions(session, categories)
+            await seed_user_goal_answers(session, questions)
+            await seed_user_conditions(session)
 
     print("Database seeding complete.")
 

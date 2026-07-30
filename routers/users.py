@@ -37,6 +37,13 @@ async def delete_user_by_id(id: str, auth_user=Depends(is_user_authenticated), d
     return await user_controller.delete_user_by_id(id, db_session)
 
 
+@router.get("/profile/goals")
+async def get_user_goals(
+    auth_user=Depends(is_user_authenticated),
+    db_session=Depends(get_session),
+):
+    return await user_controller.get_user_goals(auth_user, db_session)
+
 @router.post("/profile/goals")
 async def update_user_goals(
     payload: UserGoalAnswersRequestSchema,

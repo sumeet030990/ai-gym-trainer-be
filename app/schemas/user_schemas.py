@@ -5,7 +5,9 @@ import uuid
 
 from pydantic import BaseModel, ConfigDict
 
+from app.schemas.goal_questions_schemas import GoalQuestionOptionResponse
 from app.schemas.role_schemas import RoleResponseSchema
+from app.schemas.user_goal_answers_schema import UserAnswerSchema
 
 
 class UserRegisterResponse(BaseModel):
@@ -23,4 +25,11 @@ class UserRegisterResponse(BaseModel):
     diet_type: str | None
     sex: str | None
     created_at: datetime
-    
+
+class UserGoalsDetailsResponse(BaseModel):
+    """Public representation of a user's goals."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    question: GoalQuestionOptionResponse
+    answers: list[UserAnswerSchema]

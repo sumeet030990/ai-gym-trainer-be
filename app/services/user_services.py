@@ -1,9 +1,13 @@
+import json
+from collections import defaultdict
+
 from fastapi import Depends, HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories import user_repository, auth_repository
-from app.schemas.auth_schemas import UserUpdateRequest
-from app.schemas.user_goal_answers_schema import UserGoalAnswersRequestSchema
+from app.schemas.auth_schemas import UserRegisterResponse, UserUpdateRequest
+from app.schemas.user_goal_answers_schema import UserGoalAnswerGroupSchema, UserGoalAnswersRequestSchema
 from db.database import get_session
 from db.schemas.user_goal_answer import UserGoalAnswers
 
@@ -49,6 +53,20 @@ async def delete_user_by_id(id: str, db_session: AsyncSession):
     result = await user_repository.delete_user(db_session, user)
     return result
 
+
+async def get_user_goals(auth_user: UserRegisterResponse, db_session: AsyncSession)-> list[UserGoalAnswerGroupSchema]:
+    answers = await user_repository.get_user_goals(db_session, auth_user.id)
+
+    grouped = defaultdict(list)
+    for answer in answers:
+        grouped[answer.question_id].append(answer)
+
+    return [
+        UserGoalAnswerGroupSchema.model_validate(
+            {"question": question_answers[0].question, "answers": question_answers}
+        )
+        for question_answers in grouped.values()
+    ]
 
 
 async def update_user_goals(user, payload: UserGoalAnswersRequestSchema, db_session: AsyncSession) -> list[UserGoalAnswers]:

@@ -1,8 +1,9 @@
 import uuid
 
 from sqlalchemy import ForeignKey, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
-
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from db.schemas.goal_question_options import GoalQuestionOptions
+from db.schemas.goal_questions import GoalQuestions
 from db.database import Base
 from db.mixins import TimestampMixin, UUIDPrimaryKeyMixin
 
@@ -17,3 +18,5 @@ class UserGoalAnswers(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     question_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("goal_questions.id", ondelete="CASCADE"), nullable=False, index=True)
     option_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("goal_question_options.id", ondelete="SET NULL"), nullable=True, index=True)
     answer_text: Mapped[str | None] = mapped_column(nullable=True)  # for TEXT/NUMBER/free-text answers
+    option: Mapped[GoalQuestionOptions | None] = relationship("GoalQuestionOptions")
+    question: Mapped[GoalQuestions] = relationship("GoalQuestions")
