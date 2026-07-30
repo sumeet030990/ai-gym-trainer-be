@@ -1,4 +1,5 @@
 
+from app.schemas.equipment_schemas import EquipmentResponseSchema
 from core.security import is_user_authenticated
 from db.database import get_session
 from fastapi import APIRouter, Depends
@@ -12,5 +13,5 @@ router = APIRouter(
 
 
 @router.get("/")
-async def get_all_equipments(page: int = 1, page_size: int = 10, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
+async def get_all_equipments(page: int = 1, page_size: int = 10, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session))->list[EquipmentResponseSchema]:
   return await equipments_controller.get_all_equipments(db_session, page, page_size)
