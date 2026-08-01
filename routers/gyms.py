@@ -43,3 +43,7 @@ async def get_gym_users(gym_id: str, user_role_id: str | None = None, auth_user=
 @router.post("/{gym_id}/assign_user")
 async def assign_user_to_gym(gym_id: str, payload: dict, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
     return await gyms_controller.assign_user_to_gym(gym_id, payload, db_session)
+
+@router.get("/{gym_id}/equipments")
+async def get_gym_equipments(gym_id: str, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
+    return await gyms_controller.get_gym_equipments(gym_id, db_session)
