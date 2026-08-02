@@ -1,7 +1,7 @@
 
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.schemas.gym_equipments_schemas import AssignGymEquipmentRequest, GymEquipmentResponseSchema
+from app.schemas.gym_equipments_schemas import AssignGymEquipmentRequest, GymEquipmentResponseSchema, GymEquipmentAssignResponseSchema
 from app.services import gym_services, user_services, user_gym_services, gym_equipments_services
 from db.schemas.gyms import Gyms
 
@@ -33,6 +33,6 @@ async def get_gym_equipments(gym_id: str, db_session: AsyncSession) -> list[GymE
     equipments = await gym_equipments_services.get_gym_equipments(gym_id, db_session)
     return [GymEquipmentResponseSchema.model_validate(equipment) for equipment in equipments]
 
-async def assign_gym_equipment(gym_id: str, payload: AssignGymEquipmentRequest, db_session: AsyncSession) -> list[GymEquipmentResponseSchema]:
+async def assign_gym_equipment(gym_id: str, payload: AssignGymEquipmentRequest, db_session: AsyncSession) -> list[GymEquipmentAssignResponseSchema]:
     equipments = await gym_equipments_services.assign_gym_equipment(gym_id, payload, db_session)
-    return [GymEquipmentResponseSchema.model_validate(equipment) for equipment in equipments]
+    return [GymEquipmentAssignResponseSchema.model_validate(equipment) for equipment in equipments]

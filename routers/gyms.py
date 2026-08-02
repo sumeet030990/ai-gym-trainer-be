@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.schemas.gym_equipments_schemas import AssignGymEquipmentRequest, GymEquipmentResponseSchema
+from app.schemas.gym_equipments_schemas import AssignGymEquipmentRequest, GymEquipmentResponseSchema, GymEquipmentAssignResponseSchema
 from app.schemas.user_schemas import UserRegisterResponse
 from app.controllers import gyms_controller
 from core.security import is_user_authenticated
@@ -50,5 +50,5 @@ async def get_gym_equipments(gym_id: str, auth_user=Depends(is_user_authenticate
     return await gyms_controller.get_gym_equipments(gym_id, db_session)
 
 @router.post("/{gym_id}/equipments")
-async def assign_gym_equipment(gym_id: str, payload: AssignGymEquipmentRequest, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)) -> list[GymEquipmentResponseSchema]:
+async def assign_gym_equipment(gym_id: str, payload: AssignGymEquipmentRequest, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)) -> list[GymEquipmentAssignResponseSchema]:
     return await gyms_controller.assign_gym_equipment(gym_id, payload, db_session)

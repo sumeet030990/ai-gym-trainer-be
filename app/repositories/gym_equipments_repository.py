@@ -28,7 +28,8 @@ async def assign_gym_equipment(gym_id: str, payload: AssignGymEquipmentRequest, 
         gym_equipments = list(result.scalars().all())
 
         await db_session.commit()
-        
+
+        return gym_equipments
     except Exception as e:
         await db_session.rollback()
         raise e

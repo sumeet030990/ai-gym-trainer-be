@@ -13,4 +13,4 @@ class GymEquipments(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     gym_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("gyms.id", ondelete="CASCADE"), nullable=False, index=True)
     equipment_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("equipments.id", ondelete="CASCADE"), nullable=False, index=True)
     is_active: Mapped[bool] = mapped_column(nullable=False, default=True)
-    equipment: Mapped[Equipments] = relationship("Equipments", lazy="joined")
+    equipment: Mapped[Equipments] = relationship("Equipments")
