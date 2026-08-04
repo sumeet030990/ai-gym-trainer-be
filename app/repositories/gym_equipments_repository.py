@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.gym_equipments_schemas import AssignGymEquipmentRequest
-from db.schemas import GymEquipments, Equipments
+from db.schemas import GymEquipments
 from sqlalchemy.future import select
 from sqlalchemy import delete, insert
 from sqlalchemy.orm import selectinload
