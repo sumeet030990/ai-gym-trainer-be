@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.database import Base
 from db.mixins import TimestampMixin, UUIDPrimaryKeyMixin
 from db.schemas.roles import Roles
+from db.schemas.user_subscriptions import UserSubscriptions
 
 class DietType(enum.Enum):
     VEGETARIAN = "vegetarian"
@@ -34,7 +35,8 @@ class Users(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     first_name: Mapped[str | None] = mapped_column(nullable=True)
     last_name: Mapped[str | None] = mapped_column(nullable=True)
     birth_date: Mapped[date | None] = mapped_column(nullable=True)
-    sex: Mapped[str | None] = mapped_column(nullable=True)
+    sex: Mapped[UserSex | None] = mapped_column(nullable=True)
     diet_type: Mapped[DietType] = mapped_column(default=DietType.VEGETARIAN)
     
     role: Mapped[Roles] = relationship("Roles", foreign_keys=[role_id])
+    subscriptions: Mapped[list["UserSubscriptions"]] = relationship("UserSubscriptions", cascade="all, delete-orphan")

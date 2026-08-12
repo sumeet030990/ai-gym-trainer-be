@@ -24,13 +24,17 @@ from db.schemas import (
     Gyms,
     Muscles,
     Roles,
+    SubscriptionPlans,
     UserConditions,
     UserGoalAnswers,
     Users,
+    UserSubscriptions,
 )
 from db.schemas.exercises import LEVEL
 from db.schemas.goal_questions import QUESTION_TYPE
-from db.schemas.users import DietType
+from db.schemas.subscription_plans import SubscriptionPlanFrequency
+from db.schemas.users import DietType, UserSex
+from db.schemas.user_subscriptions import SubscriptionStatus
 from db.seeders.seed_data import (
     AI_PROVIDERS,
     CATEGORIES,
@@ -40,8 +44,10 @@ from db.seeders.seed_data import (
     GYMS,
     MUSCLES,
     ROLES,
+    SUBSCRIPTION_PLANS,
     USER_CONDITIONS,
     USER_GOAL_ANSWERS,
+    USER_SUBSCRIPTIONS,
     USERS,
 )
 
@@ -173,12 +179,50 @@ async def seed_users(session: AsyncSession, roles: dict[str, Roles]) -> dict[str
                 "first_name": user_data["first_name"],
                 "last_name": user_data["last_name"],
                 "birth_date": date.fromisoformat(user_data["birth_date"]),
-                "sex": user_data["sex"],
+                "sex": UserSex(user_data["sex"]),
                 "diet_type": DietType(user_data["diet_type"]),
             },
         )
-        users[user.email] = user
+        users[user_data["email"]] = user
     return users
+
+
+async def seed_subscription_plans(session: AsyncSession) -> dict[str, SubscriptionPlans]:
+    plans = {}
+    for plan_data in SUBSCRIPTION_PLANS:
+        plan, _ = await _get_or_create(
+            session,
+            SubscriptionPlans,
+            name=plan_data["name"],
+            defaults={
+                "price": plan_data["price"],
+                "currency": plan_data["currency"],
+                "frequency": SubscriptionPlanFrequency(plan_data["frequency"]),
+                "no_of_users": plan_data["no_of_users"],
+            },
+        )
+        plans[plan.name] = plan
+    return plans
+
+
+async def seed_user_subscriptions(
+    session: AsyncSession,
+    users: dict[str, Users],
+    plans: dict[str, SubscriptionPlans],
+) -> None:
+    for entry in USER_SUBSCRIPTIONS:
+        user = users[entry["user_email"]]
+        plan = plans[entry["plan_name"]]
+        await _get_or_create(
+            session,
+            UserSubscriptions,
+            user_id=user.id,
+            subscription_plan_id=plan.id,
+            defaults={
+                "status": SubscriptionStatus(entry["status"]),
+                "end_date": entry["end_date"],
+            },
+        )
 
 
 async def seed_goal_questions(
@@ -269,6 +313,8 @@ async def seed() -> None:
             categories = await seed_categories(session)
             await seed_ai_catalog(session)
             users = await seed_users(session, roles)
+            subscription_plans = await seed_subscription_plans(session)
+            await seed_user_subscriptions(session, users, subscription_plans)
             gyms = await seed_gyms(session, users)
             main_gym = next(iter(gyms.values()))
             equipment_catalog = await seed_equipment_catalog(session)

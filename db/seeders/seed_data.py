@@ -114,6 +114,21 @@ USERS = [
     
 ]
 
+SUBSCRIPTION_PLANS = [
+    {"name": "Free", "price": 0.0, "currency": "INR", "frequency": "lifetime", "no_of_users": 1},
+     {"name": "Basic Monthly", "price": 100.0, "currency": "INR", "frequency": "monthly", "no_of_users": 1},
+    {"name": "3 month", "price": 250.0, "currency": "INR", "frequency": "quarterly", "no_of_users": 1},
+    {"name": "Gym Owner Yearly", "price": 1000.0, "currency": "INR", "frequency": "yearly", "no_of_users": 5},
+    {"name": "Lifetime", "price": 5000.0, "currency": "INR", "frequency": "lifetime", "no_of_users": 1},
+    
+]
+
+# Subscription assignments for the synthetic dev/test users above.
+# end_date=None means the subscription has no fixed expiry yet.
+USER_SUBSCRIPTIONS = [
+    {"user_email": "sumeet.030990@gmail.com", "plan_name": "Lifetime", "status": "active", "end_date": None},
+]
+
 EQUIPMENT = [
     ("Barbell", "Standard olympic barbell"),
     ("Dumbbell", "Adjustable/free-weight dumbbells"),
