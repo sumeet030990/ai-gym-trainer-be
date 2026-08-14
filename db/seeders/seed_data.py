@@ -41,8 +41,9 @@ CATEGORIES = [
 
 AI_PROVIDERS = {
     "OpenAI": ["gpt-4o", "gpt-4o-mini", "gpt-4.1"],
-    "Anthropic": ["claude-sonnet-5", "claude-opus-4-8", "claude-haiku-4-5-20251001"],
-    "Google": ["gemini-2.5-pro", "gemini-2.5-flash"],
+    "Claude": ["claude-sonnet-5", "claude-opus-4-8", "claude-haiku-4-5-20251001"],
+    "Gemini": ["gemini-2.5-pro", "gemini-2.5-flash"],
+    "Ollama": ["gemma4"],
 }
 
 GYMS = [

@@ -4,6 +4,7 @@ from sqlalchemy import delete, func, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from db.schemas.user_conditions import UserConditions
 from db.schemas.user_goal_answer import UserGoalAnswers
 from db.schemas.user_gyms import UserGyms
 from db.schemas.users import Users
@@ -22,9 +23,26 @@ async def get_user_by_id(db_session: AsyncSession, id: str) -> Users | None:
     result = await db_session.execute(select(Users).where(Users.id == id))
     return result.scalar_one_or_none()
 
+async def get_auth_user_details(db_session: AsyncSession, id: str):
+    stmt = select(Users).where(Users.id == id).options(selectinload(Users.role)).options(selectinload(Users.subscriptions)).options(selectinload(Users.health_conditions))
+    
+    usr_result = await db_session.execute(stmt)
+    usr =  usr_result.scalar_one_or_none()
+    if not usr:
+        raise ValueError("User not found")
+    
+    
+    return usr
+
 async def get_user_goals(db_session: AsyncSession, user_id: uuid.UUID) :
     result = await db_session.execute(
         select(UserGoalAnswers).where(UserGoalAnswers.user_id == user_id).options(selectinload(UserGoalAnswers.option), selectinload(UserGoalAnswers.question))
+    )
+    return list(result.scalars().all())
+
+async def get_user_health_conditions(db_session: AsyncSession, user_id: uuid.UUID) :
+    result = await db_session.execute(
+        select(UserConditions).where(UserConditions.user_id == user_id)
     )
     return list(result.scalars().all())
 

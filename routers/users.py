@@ -17,6 +17,13 @@ async def get_users(
 ):
     return await user_controller.get_all_users(db_session, page, page_size)
 
+@router.get("/me")
+async def get_auth_user_details(
+    auth_user=Depends(is_user_authenticated),
+    db_session=Depends(get_session),
+):
+    return await user_controller.get_auth_user_details(auth_user, db_session)
+
 @router.get("/{id}", response_model=UserRegisterResponse)
 async def get_user_by_id(id: str, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
     return await user_controller.get_user_by_id(id,db_session)

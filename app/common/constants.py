@@ -1,1 +1,6 @@
-"""Shared constants used across controllers, services, and repositories."""
+AI_PROVIDERS = {
+  "OpenAI": "OpenAI",
+  "Groq": "Groq",
+  "Claude": "Claude",
+  "Ollama": "Ollama",
+}

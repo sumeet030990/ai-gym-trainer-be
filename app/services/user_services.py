@@ -21,6 +21,13 @@ async def get_user_by_mobile_or_email(user_name: str, db_session: AsyncSession =
 async def get_user_by_id(id: str, db_session: AsyncSession):
     return await user_repository.get_user_by_id(db_session, id)
 
+async def get_auth_user_details(auth_user: UserRegisterResponse, db_session: AsyncSession):
+    usr =  await user_repository.get_auth_user_details(db_session, str(auth_user.id))
+    if not usr:
+        raise ValueError("User not found")
+    user_goals = await get_user_goals(auth_user, db_session)
+    return {"user": usr, "user_goals": user_goals}
+
 
 async def update_user_by_id(id: str, payload: UserUpdateRequest, db_session: AsyncSession):
     user = await user_repository.get_user_by_id(db_session, id)
