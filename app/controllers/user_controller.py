@@ -30,7 +30,7 @@ async def get_user_by_id(id: str, db_session: AsyncSession) -> UserRegisterRespo
         raise ValueError("User not found")
     return UserRegisterResponse.model_validate(user)
 
-async def get_auth_user_details(auth_user:  UserRegisterResponse, db_session: AsyncSession):
+async def get_auth_user_details(auth_user:UserRegisterResponse, db_session: AsyncSession):
     user = await user_services.get_auth_user_details(auth_user, db_session)
     if not user:
         raise ValueError("User not found")

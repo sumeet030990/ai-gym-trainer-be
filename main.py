@@ -5,7 +5,9 @@ from fastapi import FastAPI
 from app.middlewares import StructuredResponseMiddleware
 from db.database import engine, init_db
 from routers import api_router
-
+from dotenv import load_dotenv
+# Inject variables from .env into the application environment
+load_dotenv() 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
