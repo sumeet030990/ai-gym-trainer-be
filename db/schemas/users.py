@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.database import Base
 from db.mixins import TimestampMixin, UUIDPrimaryKeyMixin
 from db.schemas.roles import Roles
-from db.schemas.user_ai_settings import UserAiSettings
+from db.schemas.body_measurements import BodyMeasurements
 from db.schemas.user_conditions import UserConditions
 from db.schemas.user_goal_answer import UserGoalAnswers
 from db.schemas.user_subscriptions import UserSubscriptions
@@ -45,3 +45,4 @@ class Users(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     subscriptions: Mapped[list["UserSubscriptions"]] = relationship("UserSubscriptions", foreign_keys=[UserSubscriptions.user_id], cascade="all, delete-orphan")
     goals: Mapped[list["UserGoalAnswers"]] = relationship("UserGoalAnswers", foreign_keys=[UserGoalAnswers.user_id], cascade="all, delete-orphan")
     health_conditions: Mapped[list["UserConditions"]] = relationship("UserConditions", foreign_keys=[UserConditions.user_id], cascade="all, delete-orphan")
+    body_measurements: Mapped[list["BodyMeasurements"]] = relationship("BodyMeasurements", foreign_keys=[BodyMeasurements.user_id], cascade="all, delete-orphan")

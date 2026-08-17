@@ -24,7 +24,7 @@ async def get_user_by_id(db_session: AsyncSession, id: str) -> Users | None:
     return result.scalar_one_or_none()
 
 async def get_auth_user_details(db_session: AsyncSession, id: str):
-    stmt = select(Users).where(Users.id == id).options(selectinload(Users.role)).options(selectinload(Users.subscriptions)).options(selectinload(Users.health_conditions))
+    stmt = select(Users).where(Users.id == id).options(selectinload(Users.role)).options(selectinload(Users.subscriptions)).options(selectinload(Users.health_conditions)).options(selectinload(Users.body_measurements))
     
     usr_result = await db_session.execute(stmt)
     usr =  usr_result.scalar_one_or_none()
