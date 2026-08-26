@@ -7,21 +7,19 @@ class ExerciseSchema(BaseModel):
     name: str
     sets: int
     reps: str
-    weight_kg: float = Field(description="Suggested load in kilograms; 0 for bodyweight-only exercises")
+    weight_kg: float = Field(description="Kg; 0 for bodyweight")
     form_cue: str
-    sort_order: int = Field(description="Order of the exercise in the workout plan")
-    notes: str | None = Field(default=None, description="Additional notes or recommendations for the exercise")
+    sort_order: int
 
 
 class WorkoutDaySchema(BaseModel):
     day: str
-    muscles: list[str] = Field(description="One or two muscle groups trained this day, from the fixed muscle list")
+    muscles: list[str] = Field(description="1-2 muscle groups trained this day, from the fixed list")
     exercises: list[ExerciseSchema]
-    warm_up_stretches: list[str] | None = Field(default=None, description="Suggested warm-up stretches for the exercise")
-    post_exercise_stretches: list[str] | None = Field(default=None, description="Suggested post-exercise stretches for the exercise")
-    notes: str | None = Field(default=None, description="Additional notes or recommendations for the workout day")
+    warm_up: list[str] = Field(description="Warm-up routine for the day as per the targeted muscles; not a plan-wide warm-up")
+    notes: str | None = Field(default=None, description="Rationale for this day's exercise/muscle choices")
 
 
 class WorkoutPlanSchema(BaseModel):
     days: list[WorkoutDaySchema]
-    notes: str | None = Field(default=None, description="Additional notes or recommendations for the workout plan")
+    notes: str | None = Field(default=None, description="Plan-wide rationale, e.g. split/day-count decisions")

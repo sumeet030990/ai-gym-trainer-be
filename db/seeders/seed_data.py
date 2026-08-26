@@ -438,7 +438,7 @@ GOAL_QUESTIONS = [
         "How often should we check in on your progress?",
         "radio",
         "AI Personalization",
-        32,
+        31,
         ["Weekly", "Every 2 Weeks", "Every 3 Weeks", "Monthly"],
     ),
 ]
