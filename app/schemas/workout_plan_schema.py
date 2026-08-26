@@ -17,6 +17,7 @@ class WorkoutDaySchema(BaseModel):
     muscles: list[str] = Field(description="1-2 muscle groups trained this day, from the fixed list")
     exercises: list[ExerciseSchema]
     warm_up: list[str] = Field(description="Warm-up routine for the day as per the targeted muscles; not a plan-wide warm-up")
+    post_exercise_stretch: list[str] = Field(description="Stretching routine for the day as per the targeted muscles; not a plan-wide cool-down")
     notes: str | None = Field(default=None, description="Rationale for this day's exercise/muscle choices")
 
 

@@ -97,6 +97,7 @@ async def generate_plan(auth_user: UserRegisterResponse, db_session: AsyncSessio
         "Start weights conservatively (0 for bodyweight exercises). "
         "For each day give targeted muscles, an ordered list of exercises, sets, reps, suggested weight in kg, and a brief form cue per exercise. "
         "Suggest warm-up as per the muscles trained that day. "
+        "Suggest a post-exercise stretch routine as per the muscles trained that day; leave it empty only if stretching isn't appropriate. "
         "For any health condition, suggest modifications or alternative exercises, or skip muscle targeting if needed for safety, and note it. "
         "Keep all notes brief."
     )
