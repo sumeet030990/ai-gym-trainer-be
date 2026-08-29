@@ -21,5 +21,6 @@ async def generate_plan(auth_user: UserRegisterResponse, db_session: AsyncSessio
 
     workout_plan = await workout_services.generate_workout_plan(user_details, db_session)
 
-    
-    return workout_plan
+    saved_plan = await workout_services.save_workout_plan(user_details, workout_plan, db_session)
+    return saved_plan
+

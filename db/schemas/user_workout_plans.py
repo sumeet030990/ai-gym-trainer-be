@@ -13,3 +13,4 @@ class UserWorkoutPlans(UUIDPrimaryKeyMixin, TimestampMixin, Base):
 
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     workout_plan: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    

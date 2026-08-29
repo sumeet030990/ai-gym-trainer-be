@@ -6,7 +6,7 @@ from app.schemas.workout_plan_schema import WorkoutPlanSchema
 import os
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
-
+from app.repositories import workout_repositories
 
 async def get_user_goals(user_details: dict):
   user_goals = []
@@ -130,3 +130,11 @@ async def generate_workout_plan(user_details: dict, db_session: AsyncSession) ->
   })
 
   return agent_response["structured_response"]
+
+
+
+# =====================================
+
+
+async def save_workout_plan(user_details: dict, workout_plan: WorkoutPlanSchema, db_session: AsyncSession):
+  return await workout_repositories.save_workout_plan(user_details, workout_plan, db_session)

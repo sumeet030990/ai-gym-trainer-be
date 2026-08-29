@@ -1,8 +1,8 @@
-"""created table
+"""db
 
-Revision ID: 9c92db1d8ae2
+Revision ID: e1979608a159
 Revises: 
-Create Date: 2026-07-12 19:22:05.842856
+Create Date: 2026-08-29 14:29:59.498601
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '9c92db1d8ae2'
+revision: str = 'e1979608a159'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -28,6 +28,14 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_ai_providers'))
     )
+    op.create_table('categories',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('name', sa.String(), nullable=False),
+    sa.Column('sort_order', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_categories'))
+    )
     op.create_table('equipments',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
@@ -36,27 +44,6 @@ def upgrade() -> None:
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_equipments'))
-    )
-    op.create_table('goal_questions',
-    sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('question', sa.String(), nullable=False),
-    sa.Column('question_type', postgresql.ENUM('CHECKBOX', 'RADIO', 'TEXT', name='question_type', create_type=False), nullable=False),
-    sa.Column('is_active', sa.Boolean(), nullable=False),
-    sa.Column('category', sa.Integer(), nullable=True),
-    sa.Column('sort_order', sa.Integer(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_goal_questions'))
-    )
-    op.create_table('gyms',
-    sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('name', sa.String(), nullable=False),
-    sa.Column('location', sa.String(), nullable=False),
-    sa.Column('contact_number', sa.String(), nullable=True),
-    sa.Column('owner_name', sa.String(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_gyms'))
     )
     op.create_table('muscles',
     sa.Column('id', sa.Uuid(), nullable=False),
@@ -73,6 +60,17 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id', name=op.f('pk_roles')),
     sa.UniqueConstraint('name', name=op.f('uq_roles_name'))
     )
+    op.create_table('subscription_plans',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('name', sa.String(), nullable=False),
+    sa.Column('price', sa.Float(), nullable=False),
+    sa.Column('currency', sa.String(), nullable=False),
+    sa.Column('frequency', postgresql.ENUM('MONTHLY', 'QUARTERLY', 'YEARLY', 'WEEKLY', 'LIFETIME', name='subscriptionplanfrequency', create_type=False), nullable=False),
+    sa.Column('no_of_users', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_subscription_plans'))
+    )
     op.create_table('ai_models',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
@@ -84,6 +82,38 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id', name=op.f('pk_ai_models'))
     )
     op.create_index(op.f('ix_ai_models_ai_provider_id'), 'ai_models', ['ai_provider_id'], unique=False)
+    op.create_table('goal_questions',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('question', sa.String(), nullable=False),
+    sa.Column('question_type', postgresql.ENUM('CHECKBOX', 'RADIO', 'TEXT', name='question_type', create_type=False), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('category_id', sa.Uuid(), nullable=True),
+    sa.Column('sort_order', sa.Integer(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['category_id'], ['categories.id'], name=op.f('fk_goal_questions_category_id_categories'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_goal_questions'))
+    )
+    op.create_index(op.f('ix_goal_questions_category_id'), 'goal_questions', ['category_id'], unique=False)
+    op.create_table('users',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('role_id', sa.Uuid(), nullable=False),
+    sa.Column('email', sa.String(), nullable=True),
+    sa.Column('mobile_no', sa.String(), nullable=False),
+    sa.Column('password', sa.String(), nullable=False),
+    sa.Column('first_name', sa.String(), nullable=True),
+    sa.Column('last_name', sa.String(), nullable=True),
+    sa.Column('birth_date', sa.Date(), nullable=True),
+    sa.Column('sex', postgresql.ENUM('MALE', 'FEMALE', 'OTHER', name='usersex', create_type=False), nullable=True),
+    sa.Column('diet_type', postgresql.ENUM('VEGETARIAN', 'EGGETARIAN', 'NON_VEGETARIAN', 'VEGAN', 'PESCATARIAN', 'KETO', 'LOW_CARB', 'MEDITERRANEAN', 'OTHER', name='diettype', create_type=False), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['role_id'], ['roles.id'], name=op.f('fk_users_role_id_roles')),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_users')),
+    sa.UniqueConstraint('email', name=op.f('uq_users_email')),
+    sa.UniqueConstraint('mobile_no', name=op.f('uq_users_mobile_no'))
+    )
+    op.create_index(op.f('ix_users_role_id'), 'users', ['role_id'], unique=False)
     op.create_table('goal_question_options',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('question_id', sa.Uuid(), nullable=False),
@@ -95,77 +125,17 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id', name=op.f('pk_goal_question_options'))
     )
     op.create_index(op.f('ix_goal_question_options_question_id'), 'goal_question_options', ['question_id'], unique=False)
-    op.create_table('gym_equipments',
-    sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('gym_id', sa.Uuid(), nullable=False),
-    sa.Column('equipment_id', sa.Uuid(), nullable=False),
-    sa.Column('is_active', sa.Boolean(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['equipment_id'], ['equipments.id'], name=op.f('fk_gym_equipments_equipment_id_equipments'), ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['gym_id'], ['gyms.id'], name=op.f('fk_gym_equipments_gym_id_gyms'), ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_gym_equipments'))
-    )
-    op.create_index(op.f('ix_gym_equipments_equipment_id'), 'gym_equipments', ['equipment_id'], unique=False)
-    op.create_index(op.f('ix_gym_equipments_gym_id'), 'gym_equipments', ['gym_id'], unique=False)
-    op.create_table('users',
-    sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('role_id', sa.Uuid(), nullable=False),
-    sa.Column('email', sa.String(), nullable=True),
-    sa.Column('mobile_no', sa.String(), nullable=False),
-    sa.Column('password', sa.String(), nullable=False),
-    sa.Column('first_name', sa.String(), nullable=True),
-    sa.Column('last_name', sa.String(), nullable=True),
-    sa.Column('birth_date', sa.Date(), nullable=True),
-    sa.Column('diet_type', postgresql.ENUM('VEGETARIAN', 'EGGETARIAN', 'NON_VEGETARIAN', name='diettype', create_type=False), nullable=False),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['role_id'], ['roles.id'], name=op.f('fk_users_role_id_roles')),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_users')),
-    sa.UniqueConstraint('email', name=op.f('uq_users_email')),
-    sa.UniqueConstraint('mobile_no', name=op.f('uq_users_mobile_no'))
-    )
-    op.create_index(op.f('ix_users_role_id'), 'users', ['role_id'], unique=False)
-    op.create_table('body_measurements',
-    sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('user_id', sa.Uuid(), nullable=False),
-    sa.Column('trainer_id', sa.Uuid(), nullable=True),
-    sa.Column('gym_id', sa.Uuid(), nullable=True),
-    sa.Column('weight_kg', sa.Float(), nullable=True),
-    sa.Column('height_cm', sa.Float(), nullable=True),
-    sa.Column('chest_cm', sa.Float(), nullable=True),
-    sa.Column('waist_cm', sa.Float(), nullable=True),
-    sa.Column('hips_cm', sa.Float(), nullable=True),
-    sa.Column('left_arm_cm', sa.Float(), nullable=True),
-    sa.Column('right_arm_cm', sa.Float(), nullable=True),
-    sa.Column('left_thigh_cm', sa.Float(), nullable=True),
-    sa.Column('right_thigh_cm', sa.Float(), nullable=True),
-    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['gym_id'], ['gyms.id'], name=op.f('fk_body_measurements_gym_id_gyms'), ondelete='SET NULL'),
-    sa.ForeignKeyConstraint(['trainer_id'], ['users.id'], name=op.f('fk_body_measurements_trainer_id_users'), ondelete='SET NULL'),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_body_measurements_user_id_users'), ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_body_measurements'))
-    )
-    op.create_index(op.f('ix_body_measurements_gym_id'), 'body_measurements', ['gym_id'], unique=False)
-    op.create_index(op.f('ix_body_measurements_trainer_id'), 'body_measurements', ['trainer_id'], unique=False)
-    op.create_index(op.f('ix_body_measurements_user_id'), 'body_measurements', ['user_id'], unique=False)
-    op.create_table('exercises',
+    op.create_table('gyms',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('name', sa.String(), nullable=False),
-    sa.Column('description', sa.String(), nullable=True),
-    sa.Column('equipment_id', sa.Uuid(), nullable=True),
-    sa.Column('muscle_id', sa.Uuid(), nullable=True),
-    sa.Column('video_url', sa.String(), nullable=True),
-    sa.Column('video_provider', sa.String(), nullable=True),
+    sa.Column('location', sa.String(), nullable=False),
+    sa.Column('owner_user_id', sa.Uuid(), nullable=True),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['equipment_id'], ['gym_equipments.id'], name=op.f('fk_exercises_equipment_id_gym_equipments'), ondelete='CASCADE'),
-    sa.ForeignKeyConstraint(['muscle_id'], ['muscles.id'], name=op.f('fk_exercises_muscle_id_muscles'), ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_exercises'))
+    sa.ForeignKeyConstraint(['owner_user_id'], ['users.id'], name=op.f('fk_gyms_owner_user_id_users'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_gyms'))
     )
-    op.create_index(op.f('ix_exercises_equipment_id'), 'exercises', ['equipment_id'], unique=False)
-    op.create_index(op.f('ix_exercises_muscle_id'), 'exercises', ['muscle_id'], unique=False)
+    op.create_index(op.f('ix_gyms_owner_user_id'), 'gyms', ['owner_user_id'], unique=False)
     op.create_table('user_ai_settings',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('user_id', sa.Uuid(), nullable=False),
@@ -194,6 +164,70 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id', name=op.f('pk_user_conditions'))
     )
     op.create_index(op.f('ix_user_conditions_user_id'), 'user_conditions', ['user_id'], unique=False)
+    op.create_table('user_subscriptions',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('user_id', sa.Uuid(), nullable=False),
+    sa.Column('subscription_plan_id', sa.Uuid(), nullable=False),
+    sa.Column('start_date', sa.DateTime(), nullable=False),
+    sa.Column('end_date', sa.DateTime(), nullable=True),
+    sa.Column('status', postgresql.ENUM('ACTIVE', 'CANCELLED', 'EXPIRED', 'PAUSED', name='subscriptionstatus', create_type=False), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['subscription_plan_id'], ['subscription_plans.id'], name=op.f('fk_user_subscriptions_subscription_plan_id_subscription_plans')),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_user_subscriptions_user_id_users')),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_user_subscriptions'))
+    )
+    op.create_index(op.f('ix_user_subscriptions_subscription_plan_id'), 'user_subscriptions', ['subscription_plan_id'], unique=False)
+    op.create_index(op.f('ix_user_subscriptions_user_id'), 'user_subscriptions', ['user_id'], unique=False)
+    op.create_table('user_workout_plans',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('user_id', sa.Uuid(), nullable=False),
+    sa.Column('workout_plan', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_user_workout_plans_user_id_users'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_user_workout_plans'))
+    )
+    op.create_index(op.f('ix_user_workout_plans_user_id'), 'user_workout_plans', ['user_id'], unique=False)
+    op.create_table('body_measurements',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('user_id', sa.Uuid(), nullable=False),
+    sa.Column('trainer_id', sa.Uuid(), nullable=True),
+    sa.Column('gym_id', sa.Uuid(), nullable=True),
+    sa.Column('weight_kg', sa.Float(), nullable=True),
+    sa.Column('height_cm', sa.Float(), nullable=True),
+    sa.Column('chest_cm', sa.Float(), nullable=True),
+    sa.Column('waist_cm', sa.Float(), nullable=True),
+    sa.Column('hips_cm', sa.Float(), nullable=True),
+    sa.Column('left_arm_cm', sa.Float(), nullable=True),
+    sa.Column('right_arm_cm', sa.Float(), nullable=True),
+    sa.Column('left_thigh_cm', sa.Float(), nullable=True),
+    sa.Column('right_thigh_cm', sa.Float(), nullable=True),
+    sa.Column('neck_cm', sa.Float(), nullable=True),
+    sa.Column('body_fat_percent', sa.Float(), nullable=True),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['gym_id'], ['gyms.id'], name=op.f('fk_body_measurements_gym_id_gyms'), ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['trainer_id'], ['users.id'], name=op.f('fk_body_measurements_trainer_id_users'), ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_body_measurements_user_id_users'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_body_measurements'))
+    )
+    op.create_index(op.f('ix_body_measurements_gym_id'), 'body_measurements', ['gym_id'], unique=False)
+    op.create_index(op.f('ix_body_measurements_trainer_id'), 'body_measurements', ['trainer_id'], unique=False)
+    op.create_index(op.f('ix_body_measurements_user_id'), 'body_measurements', ['user_id'], unique=False)
+    op.create_table('gym_equipments',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('gym_id', sa.Uuid(), nullable=False),
+    sa.Column('equipment_id', sa.Uuid(), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['equipment_id'], ['equipments.id'], name=op.f('fk_gym_equipments_equipment_id_equipments'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['gym_id'], ['gyms.id'], name=op.f('fk_gym_equipments_gym_id_gyms'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_gym_equipments'))
+    )
+    op.create_index(op.f('ix_gym_equipments_equipment_id'), 'gym_equipments', ['equipment_id'], unique=False)
+    op.create_index(op.f('ix_gym_equipments_gym_id'), 'gym_equipments', ['gym_id'], unique=False)
     op.create_table('user_goal_answers',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('user_id', sa.Uuid(), nullable=False),
@@ -226,6 +260,21 @@ def upgrade() -> None:
     op.create_index(op.f('ix_user_gyms_gym_id'), 'user_gyms', ['gym_id'], unique=False)
     op.create_index(op.f('ix_user_gyms_trainer_id'), 'user_gyms', ['trainer_id'], unique=False)
     op.create_index(op.f('ix_user_gyms_user_id'), 'user_gyms', ['user_id'], unique=False)
+    op.create_table('exercises',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('name', sa.String(), nullable=False),
+    sa.Column('description', sa.String(), nullable=True),
+    sa.Column('equipment_id', sa.Uuid(), nullable=True),
+    sa.Column('muscle_id', sa.Uuid(), nullable=True),
+    sa.Column('excercise_level', postgresql.ENUM('BEGINNER', 'INTERMEDIATE', 'ADVANCED', name='level', create_type=False), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['equipment_id'], ['gym_equipments.id'], name=op.f('fk_exercises_equipment_id_gym_equipments'), ondelete='CASCADE'),
+    sa.ForeignKeyConstraint(['muscle_id'], ['muscles.id'], name=op.f('fk_exercises_muscle_id_muscles'), ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_exercises'))
+    )
+    op.create_index(op.f('ix_exercises_equipment_id'), 'exercises', ['equipment_id'], unique=False)
+    op.create_index(op.f('ix_exercises_muscle_id'), 'exercises', ['muscle_id'], unique=False)
     op.create_table('exercise_equipment',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('exercise_id', sa.Uuid(), nullable=False),
@@ -281,6 +330,9 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_exercise_equipment_exercise_id'), table_name='exercise_equipment')
     op.drop_index(op.f('ix_exercise_equipment_equipment_id'), table_name='exercise_equipment')
     op.drop_table('exercise_equipment')
+    op.drop_index(op.f('ix_exercises_muscle_id'), table_name='exercises')
+    op.drop_index(op.f('ix_exercises_equipment_id'), table_name='exercises')
+    op.drop_table('exercises')
     op.drop_index(op.f('ix_user_gyms_user_id'), table_name='user_gyms')
     op.drop_index(op.f('ix_user_gyms_trainer_id'), table_name='user_gyms')
     op.drop_index(op.f('ix_user_gyms_gym_id'), table_name='user_gyms')
@@ -289,32 +341,38 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_user_goal_answers_question_id'), table_name='user_goal_answers')
     op.drop_index(op.f('ix_user_goal_answers_option_id'), table_name='user_goal_answers')
     op.drop_table('user_goal_answers')
+    op.drop_index(op.f('ix_gym_equipments_gym_id'), table_name='gym_equipments')
+    op.drop_index(op.f('ix_gym_equipments_equipment_id'), table_name='gym_equipments')
+    op.drop_table('gym_equipments')
+    op.drop_index(op.f('ix_body_measurements_user_id'), table_name='body_measurements')
+    op.drop_index(op.f('ix_body_measurements_trainer_id'), table_name='body_measurements')
+    op.drop_index(op.f('ix_body_measurements_gym_id'), table_name='body_measurements')
+    op.drop_table('body_measurements')
+    op.drop_index(op.f('ix_user_workout_plans_user_id'), table_name='user_workout_plans')
+    op.drop_table('user_workout_plans')
+    op.drop_index(op.f('ix_user_subscriptions_user_id'), table_name='user_subscriptions')
+    op.drop_index(op.f('ix_user_subscriptions_subscription_plan_id'), table_name='user_subscriptions')
+    op.drop_table('user_subscriptions')
     op.drop_index(op.f('ix_user_conditions_user_id'), table_name='user_conditions')
     op.drop_table('user_conditions')
     op.drop_index(op.f('ix_user_ai_settings_user_id'), table_name='user_ai_settings')
     op.drop_index(op.f('ix_user_ai_settings_ai_provider_id'), table_name='user_ai_settings')
     op.drop_index(op.f('ix_user_ai_settings_ai_model_id'), table_name='user_ai_settings')
     op.drop_table('user_ai_settings')
-    op.drop_index(op.f('ix_exercises_muscle_id'), table_name='exercises')
-    op.drop_index(op.f('ix_exercises_equipment_id'), table_name='exercises')
-    op.drop_table('exercises')
-    op.drop_index(op.f('ix_body_measurements_user_id'), table_name='body_measurements')
-    op.drop_index(op.f('ix_body_measurements_trainer_id'), table_name='body_measurements')
-    op.drop_index(op.f('ix_body_measurements_gym_id'), table_name='body_measurements')
-    op.drop_table('body_measurements')
-    op.drop_index(op.f('ix_users_role_id'), table_name='users')
-    op.drop_table('users')
-    op.drop_index(op.f('ix_gym_equipments_gym_id'), table_name='gym_equipments')
-    op.drop_index(op.f('ix_gym_equipments_equipment_id'), table_name='gym_equipments')
-    op.drop_table('gym_equipments')
+    op.drop_index(op.f('ix_gyms_owner_user_id'), table_name='gyms')
+    op.drop_table('gyms')
     op.drop_index(op.f('ix_goal_question_options_question_id'), table_name='goal_question_options')
     op.drop_table('goal_question_options')
+    op.drop_index(op.f('ix_users_role_id'), table_name='users')
+    op.drop_table('users')
+    op.drop_index(op.f('ix_goal_questions_category_id'), table_name='goal_questions')
+    op.drop_table('goal_questions')
     op.drop_index(op.f('ix_ai_models_ai_provider_id'), table_name='ai_models')
     op.drop_table('ai_models')
+    op.drop_table('subscription_plans')
     op.drop_table('roles')
     op.drop_table('muscles')
-    op.drop_table('gyms')
-    op.drop_table('goal_questions')
     op.drop_table('equipments')
+    op.drop_table('categories')
     op.drop_table('ai_providers')
     # ### end Alembic commands ###
