@@ -17,3 +17,8 @@ router = APIRouter(
 async def generate_plan(auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
 
   return await workout_controller.generate_plan(auth_user, db_session)
+
+
+@router.get("/user-plan", summary="Get the personalized workout plan for the authenticated user.")
+async def get_user_plan(auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
+    return await workout_controller.get_user_plan(auth_user, db_session)

@@ -138,3 +138,6 @@ async def generate_workout_plan(user_details: dict, db_session: AsyncSession) ->
 
 async def save_workout_plan(user_details: dict, workout_plan: WorkoutPlanSchema, db_session: AsyncSession):
   return await workout_repositories.save_workout_plan(user_details, workout_plan, db_session)
+
+async def get_user_workout_plan(user_details: dict, db_session: AsyncSession) -> WorkoutPlanSchema:
+  return await workout_repositories.get_user_workout_plan(user_details, db_session)

@@ -24,3 +24,13 @@ async def generate_plan(auth_user: UserRegisterResponse, db_session: AsyncSessio
     saved_plan = await workout_services.save_workout_plan(user_details, workout_plan, db_session)
     return saved_plan
 
+
+async def get_user_plan(auth_user: UserRegisterResponse, db_session: AsyncSession):
+    """Get the personalized workout plan for the authenticated user."""
+    user_details = await user_services.get_auth_user_details(auth_user, db_session)
+
+    if not user_details:
+        raise ValueError("User not found")
+
+    workout_plan = await workout_services.get_user_workout_plan(user_details, db_session)
+    return workout_plan
