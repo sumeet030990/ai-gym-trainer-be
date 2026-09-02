@@ -1,8 +1,14 @@
 
+import uuid
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from app.schemas.workout_schemas import WorkoutLogRequest
 from db.schemas.user_workout_plans import UserWorkoutPlans
-from app.schemas.workout_plan_schema import WorkoutPlanSchema
+from db.schemas.workout_logs import WorkoutLogs
+from db.schemas.workout_log_exercises import WorkoutLogExercises
+from db.schemas.workout_log_sets import WorkoutLogSets
+from app.schemas.workout_plan_schema import WorkoutPlanResponseSchema, WorkoutPlanSchema
 
 
 async def save_workout_plan(user_details: dict, workout_plan: WorkoutPlanSchema, db_session: AsyncSession):
@@ -21,15 +27,57 @@ async def save_workout_plan(user_details: dict, workout_plan: WorkoutPlanSchema,
     return new_plan
   
   
-async def get_user_workout_plan(user_details: dict, db_session: AsyncSession) -> WorkoutPlanSchema:
-    user = user_details["user"]
+async def get_user_workout_plan(user_id: UUID, db_session: AsyncSession) -> WorkoutPlanResponseSchema:
     
     result = await db_session.execute(
-        select(UserWorkoutPlans).where(UserWorkoutPlans.user_id == user.id)
+        select(UserWorkoutPlans).where(UserWorkoutPlans.user_id == user_id).order_by(UserWorkoutPlans.created_at.desc())
     )
     user_plan = result.scalars().first()
     
     if not user_plan:
         raise ValueError("Workout plan not found")
     
-    return WorkoutPlanSchema.model_validate(user_plan.workout_plan)
+    return WorkoutPlanResponseSchema.model_validate(user_plan)
+
+
+
+async def log_workout(userId: UUID, workout_log: WorkoutLogRequest, db_session: AsyncSession) -> WorkoutLogs:
+    new_log = WorkoutLogs(
+        id=uuid.uuid4(),
+        user_id=userId,
+        workout_date=workout_log.workout_date,
+    )
+    db_session.add(new_log)
+    # No ORM relationship() ties these tables together (only raw FK columns), so the
+    # unit-of-work can't infer insert order on its own — flush the parent before adding
+    # rows that reference it, or the child INSERTs can be emitted first and violate the FK.
+    await db_session.flush()
+
+    new_exercises = []
+    for muscle_log in workout_log.muscles:
+        for exercise_log in muscle_log.exercises:
+            new_exercise = WorkoutLogExercises(
+                id=uuid.uuid4(),
+                workout_log_id=new_log.id,
+                muscle_id=muscle_log.muscle_id,
+                exercise_id=exercise_log.exercise_id,
+            )
+            db_session.add(new_exercise)
+            new_exercises.append((new_exercise, exercise_log.sets))
+
+    await db_session.flush()
+
+    for new_exercise, sets in new_exercises:
+        for set_log in sets:
+            db_session.add(WorkoutLogSets(
+                id=uuid.uuid4(),
+                workout_log_exercise_id=new_exercise.id,
+                set_number=set_log.set_number,
+                reps=set_log.reps,
+                weight_kg=set_log.weight_kg,
+            ))
+
+    await db_session.commit()
+    await db_session.refresh(new_log)
+
+    return new_log

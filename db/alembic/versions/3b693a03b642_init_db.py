@@ -1,8 +1,8 @@
-"""db
+"""init db
 
-Revision ID: e1979608a159
+Revision ID: 3b693a03b642
 Revises: 
-Create Date: 2026-08-29 14:29:59.498601
+Create Date: 2026-09-03 00:06:02.210750
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'e1979608a159'
+revision: str = '3b693a03b642'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -189,6 +189,17 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id', name=op.f('pk_user_workout_plans'))
     )
     op.create_index(op.f('ix_user_workout_plans_user_id'), 'user_workout_plans', ['user_id'], unique=False)
+    op.create_table('workout_logs',
+    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('user_id', sa.Uuid(), nullable=False),
+    sa.Column('workout_date', sa.Date(), nullable=False),
+    sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_workout_logs_user_id_users'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_workout_logs'))
+    )
+    op.create_index(op.f('ix_workout_logs_user_id'), 'workout_logs', ['user_id'], unique=False)
+    op.create_index(op.f('ix_workout_logs_workout_date'), 'workout_logs', ['workout_date'], unique=False)
     op.create_table('body_measurements',
     sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('user_id', sa.Uuid(), nullable=False),
@@ -287,46 +298,45 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_exercise_equipment_equipment_id'), 'exercise_equipment', ['equipment_id'], unique=False)
     op.create_index(op.f('ix_exercise_equipment_exercise_id'), 'exercise_equipment', ['exercise_id'], unique=False)
-    op.create_table('workout_exercises',
+    op.create_table('workout_log_exercises',
     sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('user_id', sa.Uuid(), nullable=False),
+    sa.Column('workout_log_id', sa.Uuid(), nullable=False),
+    sa.Column('muscle_id', sa.Uuid(), nullable=True),
     sa.Column('exercise_id', sa.Uuid(), nullable=False),
-    sa.Column('sets', sa.Integer(), nullable=False),
-    sa.Column('reps', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['exercise_id'], ['exercises.id'], name=op.f('fk_workout_exercises_exercise_id_exercises')),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], name=op.f('fk_workout_exercises_user_id_users'), ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_workout_exercises'))
+    sa.ForeignKeyConstraint(['exercise_id'], ['exercises.id'], name=op.f('fk_workout_log_exercises_exercise_id_exercises')),
+    sa.ForeignKeyConstraint(['muscle_id'], ['muscles.id'], name=op.f('fk_workout_log_exercises_muscle_id_muscles'), ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['workout_log_id'], ['workout_logs.id'], name=op.f('fk_workout_log_exercises_workout_log_id_workout_logs'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_workout_log_exercises'))
     )
-    op.create_index(op.f('ix_workout_exercises_exercise_id'), 'workout_exercises', ['exercise_id'], unique=False)
-    op.create_index(op.f('ix_workout_exercises_user_id'), 'workout_exercises', ['user_id'], unique=False)
-    op.create_table('workout_exercise_details',
+    op.create_index(op.f('ix_workout_log_exercises_exercise_id'), 'workout_log_exercises', ['exercise_id'], unique=False)
+    op.create_index(op.f('ix_workout_log_exercises_muscle_id'), 'workout_log_exercises', ['muscle_id'], unique=False)
+    op.create_index(op.f('ix_workout_log_exercises_workout_log_id'), 'workout_log_exercises', ['workout_log_id'], unique=False)
+    op.create_table('workout_log_sets',
     sa.Column('id', sa.Uuid(), nullable=False),
-    sa.Column('workout_exercise_id', sa.Uuid(), nullable=False),
-    sa.Column('target_sets', sa.Integer(), nullable=False),
-    sa.Column('actual_sets', sa.Integer(), nullable=True),
-    sa.Column('target_reps', sa.Integer(), nullable=False),
-    sa.Column('actual_reps', sa.Integer(), nullable=True),
-    sa.Column('target_weight', sa.Float(), nullable=True),
-    sa.Column('actual_weight', sa.Float(), nullable=True),
+    sa.Column('workout_log_exercise_id', sa.Uuid(), nullable=False),
+    sa.Column('set_number', sa.Integer(), nullable=False),
+    sa.Column('reps', sa.Integer(), nullable=False),
+    sa.Column('weight_kg', sa.Float(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['workout_exercise_id'], ['workout_exercises.id'], name=op.f('fk_workout_exercise_details_workout_exercise_id_workout_exercises'), ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id', name=op.f('pk_workout_exercise_details'))
+    sa.ForeignKeyConstraint(['workout_log_exercise_id'], ['workout_log_exercises.id'], name=op.f('fk_workout_log_sets_workout_log_exercise_id_workout_log_exercises'), ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id', name=op.f('pk_workout_log_sets'))
     )
-    op.create_index(op.f('ix_workout_exercise_details_workout_exercise_id'), 'workout_exercise_details', ['workout_exercise_id'], unique=False)
+    op.create_index(op.f('ix_workout_log_sets_workout_log_exercise_id'), 'workout_log_sets', ['workout_log_exercise_id'], unique=False)
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
-    op.drop_index(op.f('ix_workout_exercise_details_workout_exercise_id'), table_name='workout_exercise_details')
-    op.drop_table('workout_exercise_details')
-    op.drop_index(op.f('ix_workout_exercises_user_id'), table_name='workout_exercises')
-    op.drop_index(op.f('ix_workout_exercises_exercise_id'), table_name='workout_exercises')
-    op.drop_table('workout_exercises')
+    op.drop_index(op.f('ix_workout_log_sets_workout_log_exercise_id'), table_name='workout_log_sets')
+    op.drop_table('workout_log_sets')
+    op.drop_index(op.f('ix_workout_log_exercises_workout_log_id'), table_name='workout_log_exercises')
+    op.drop_index(op.f('ix_workout_log_exercises_muscle_id'), table_name='workout_log_exercises')
+    op.drop_index(op.f('ix_workout_log_exercises_exercise_id'), table_name='workout_log_exercises')
+    op.drop_table('workout_log_exercises')
     op.drop_index(op.f('ix_exercise_equipment_exercise_id'), table_name='exercise_equipment')
     op.drop_index(op.f('ix_exercise_equipment_equipment_id'), table_name='exercise_equipment')
     op.drop_table('exercise_equipment')
@@ -348,6 +358,9 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_body_measurements_trainer_id'), table_name='body_measurements')
     op.drop_index(op.f('ix_body_measurements_gym_id'), table_name='body_measurements')
     op.drop_table('body_measurements')
+    op.drop_index(op.f('ix_workout_logs_workout_date'), table_name='workout_logs')
+    op.drop_index(op.f('ix_workout_logs_user_id'), table_name='workout_logs')
+    op.drop_table('workout_logs')
     op.drop_index(op.f('ix_user_workout_plans_user_id'), table_name='user_workout_plans')
     op.drop_table('user_workout_plans')
     op.drop_index(op.f('ix_user_subscriptions_user_id'), table_name='user_subscriptions')

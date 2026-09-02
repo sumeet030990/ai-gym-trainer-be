@@ -1,6 +1,7 @@
+from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ExerciseSchema(BaseModel):
@@ -24,3 +25,9 @@ class WorkoutDaySchema(BaseModel):
 class WorkoutPlanSchema(BaseModel):
     days: list[WorkoutDaySchema]
     notes: str | None = Field(default=None, description="Plan-wide rationale, e.g. split/day-count decisions")
+
+class WorkoutPlanResponseSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    workout_plan: WorkoutPlanSchema
+    created_at: datetime = Field(description="Timestamp when the workout plan was created")
