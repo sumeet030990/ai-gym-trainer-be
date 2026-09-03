@@ -1,6 +1,8 @@
 
+from datetime import datetime, timezone, timedelta
 import uuid
 from uuid import UUID
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.schemas.workout_schemas import WorkoutLogRequest
@@ -8,7 +10,7 @@ from db.schemas.user_workout_plans import UserWorkoutPlans
 from db.schemas.workout_logs import WorkoutLogs
 from db.schemas.workout_log_exercises import WorkoutLogExercises
 from db.schemas.workout_log_sets import WorkoutLogSets
-from app.schemas.workout_plan_schema import WorkoutPlanResponseSchema, WorkoutPlanSchema
+from app.schemas.workout_plan_schema import WorkoutPlanResponseSchema, WorkoutPlanSchema, GetUserWorkoutPlanResponseSchema
 
 
 async def save_workout_plan(user_details: dict, workout_plan: WorkoutPlanSchema, db_session: AsyncSession):
@@ -40,6 +42,26 @@ async def get_user_workout_plan(user_id: UUID, db_session: AsyncSession) -> Work
     return WorkoutPlanResponseSchema.model_validate(user_plan)
 
 
+async def get_user_workout_logs(userId: UUID, db_session: AsyncSession, start_date: Optional[str] = None, end_date: Optional[str] = None):
+    query = select(WorkoutLogs).where(WorkoutLogs.user_id == userId)
+    
+    if start_date:
+        query = query.where(WorkoutLogs.workout_date >= start_date)
+    else:
+        # Calculate the timestamp for exactly 30 days ago
+        thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+        query = query.where(WorkoutLogs.workout_date >= thirty_days_ago)
+    if end_date:
+        query = query.where(WorkoutLogs.workout_date <= end_date)
+    else:
+        # If no end date is provided, use the current timestamp
+        now = datetime.now(timezone.utc)
+        query = query.where(WorkoutLogs.workout_date <= now)
+
+    result = await db_session.execute(query.order_by(WorkoutLogs.workout_date.desc()))
+    data = result.scalars().all()
+    
+    return [GetUserWorkoutPlanResponseSchema.model_validate(log) for log in data]
 
 async def log_workout(userId: UUID, workout_log: WorkoutLogRequest, db_session: AsyncSession) -> WorkoutLogs:
     new_log = WorkoutLogs(

@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+import uuid
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -30,4 +31,13 @@ class WorkoutPlanResponseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     workout_plan: WorkoutPlanSchema
+    created_at: datetime = Field(description="Timestamp when the workout plan was created")
+
+
+# =======================
+class GetUserWorkoutPlanResponseSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID = Field(description="Unique identifier for the workout plan")
+    workout_date: datetime = Field(description="Date when the workout was performed")
     created_at: datetime = Field(description="Timestamp when the workout plan was created")

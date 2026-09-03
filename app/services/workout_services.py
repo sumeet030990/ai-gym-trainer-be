@@ -1,3 +1,5 @@
+from typing import Optional
+
 from app.schemas.workout_schemas import WorkoutLogRequest
 from app.services import equipments_services, muscle_services
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -139,12 +141,22 @@ async def generate_workout_plan(user_details: dict, db_session: AsyncSession) ->
 
 
 async def save_workout_plan(user_details: dict, workout_plan: WorkoutPlanSchema, db_session: AsyncSession):
+  '''Saves the workout plan for the user which was created by the AI workout agent in the database.'''
   return await workout_repositories.save_workout_plan(user_details, workout_plan, db_session)
 
 async def get_user_workout_plan(user_id: UUID, db_session: AsyncSession) -> WorkoutPlanResponseSchema:
   return await workout_repositories.get_user_workout_plan(user_id, db_session)
+    
+# =====================================
+async def log_workout(userId: UUID, workout_log: WorkoutLogRequest, db_session: AsyncSession):
+  ''' Log each day workout, example: muscle trained, sets, reps, weight '''
+  return await workout_repositories.log_workout(userId, workout_log, db_session)
 
+async def get_user_workout_logs(userId: UUID, db_session: AsyncSession,start_date: Optional[str] = None, end_date: Optional[str] = None):
+  '''Get the workout logs for the user within the specified date range.'''
+  return await workout_repositories.get_user_workout_logs(userId, db_session, start_date, end_date)
 
+# =====================================
 async def check_if_workout_plan_regeneration_needed(userId: UUID, db_session: AsyncSession) -> bool:
   try:
       
@@ -157,8 +169,3 @@ async def check_if_workout_plan_regeneration_needed(userId: UUID, db_session: As
       return False
   except ValueError:
       return True
-    
-    
-# =====================================
-async def log_workout(userId: UUID, workout_log: WorkoutLogRequest, db_session: AsyncSession):
-  return await workout_repositories.log_workout(userId, workout_log, db_session)

@@ -1,8 +1,7 @@
 
 
 from datetime import date
-
-
+from typing import Optional
 
 from app.schemas.workout_schemas import WorkoutLogRequest
 from app.services import workout_services
@@ -37,6 +36,16 @@ async def get_user_plan(auth_user: UserRegisterResponse, db_session: AsyncSessio
     workout_plan = await workout_services.get_user_workout_plan(user.id, db_session)
     return workout_plan
 
+# =====================================
+async def get_user_workout_logs(auth_user: UserRegisterResponse, db_session: AsyncSession, start_date: Optional[str] = None, end_date: Optional[str] = None):
+    """Get the workout logs for the authenticated user."""
+    user_details = await user_services.get_auth_user_details(auth_user, db_session)
+
+    if not user_details:
+        raise ValueError("User not found")
+    user = user_details["user"]
+
+    return await workout_services.get_user_workout_logs(user.id, db_session, start_date, end_date)
 
 async def log_user_workout(request_data: WorkoutLogRequest, auth_user: UserRegisterResponse, db_session: AsyncSession):
     """Log a completed workout for the authenticated user."""
