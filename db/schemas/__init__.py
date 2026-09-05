@@ -19,6 +19,7 @@ from db.schemas.categories import Categories
 from db.schemas.subscription_plans import SubscriptionPlans
 from db.schemas.user_subscriptions import UserSubscriptions
 from db.schemas.user_workout_plans import UserWorkoutPlans
+from db.schemas.user_attendance import UserAttendance
 from db.schemas.workout_logs import WorkoutLogs
 from db.schemas.workout_log_exercises import WorkoutLogExercises
 from db.schemas.workout_log_sets import WorkoutLogSets
@@ -45,6 +46,7 @@ __all__ = [
     "SubscriptionPlans",
     "UserSubscriptions",
     "UserWorkoutPlans",
+    "UserAttendance",
     "WorkoutLogs",
     "WorkoutLogExercises",
     "WorkoutLogSets",

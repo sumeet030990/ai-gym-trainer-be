@@ -12,4 +12,4 @@ class WorkoutLogs(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "workout_logs"
 
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    workout_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    attendance_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("user_attendance.id", ondelete="CASCADE"), nullable=False, index=True)

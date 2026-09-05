@@ -1,5 +1,5 @@
 
-from datetime import datetime, timezone, timedelta
+from datetime import date, datetime, time, timezone, timedelta
 import uuid
 from uuid import UUID
 from typing import Optional
@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.schemas.workout_schemas import WorkoutLogRequest
 from db.schemas.user_workout_plans import UserWorkoutPlans
+from db.schemas.user_attendance import UserAttendance
 from db.schemas.workout_logs import WorkoutLogs
 from db.schemas.workout_log_exercises import WorkoutLogExercises
 from db.schemas.workout_log_sets import WorkoutLogSets
@@ -43,31 +44,43 @@ async def get_user_workout_plan(user_id: UUID, db_session: AsyncSession) -> Work
 
 
 async def get_user_workout_logs(userId: UUID, db_session: AsyncSession, start_date: Optional[str] = None, end_date: Optional[str] = None):
-    query = select(WorkoutLogs).where(WorkoutLogs.user_id == userId)
-    
-    if start_date:
-        query = query.where(WorkoutLogs.workout_date >= start_date)
-    else:
-        # Calculate the timestamp for exactly 30 days ago
-        thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
-        query = query.where(WorkoutLogs.workout_date >= thirty_days_ago)
-    if end_date:
-        query = query.where(WorkoutLogs.workout_date <= end_date)
-    else:
-        # If no end date is provided, use the current timestamp
-        now = datetime.now(timezone.utc)
-        query = query.where(WorkoutLogs.workout_date <= now)
+    query = (
+        select(WorkoutLogs, UserAttendance.attendance_date)
+        .join(UserAttendance, WorkoutLogs.attendance_id == UserAttendance.id)
+        .where(WorkoutLogs.user_id == userId)
+    )
 
-    result = await db_session.execute(query.order_by(WorkoutLogs.workout_date.desc()))
-    data = result.scalars().all()
-    
-    return [GetUserWorkoutPlanResponseSchema.model_validate(log) for log in data]
+    if start_date:
+        start_of_day = datetime.combine(date.fromisoformat(start_date), time.min)
+        query = query.where(UserAttendance.attendance_date >= start_of_day)
+    else:
+        # attendance_date is stored as a naive UTC timestamp (see attendance_repository.create_attendance)
+        thirty_days_ago = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=30)
+        query = query.where(UserAttendance.attendance_date >= thirty_days_ago)
+    if end_date:
+        end_of_day = datetime.combine(date.fromisoformat(end_date), time.max)
+        query = query.where(UserAttendance.attendance_date <= end_of_day)
+    else:
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        query = query.where(UserAttendance.attendance_date <= now)
+
+    result = await db_session.execute(query.order_by(UserAttendance.attendance_date.desc()))
+    data = result.all()
+
+    return [
+        GetUserWorkoutPlanResponseSchema(
+            id=log.id,
+            workout_date=attendance_date,
+            created_at=log.created_at,
+        )
+        for log, attendance_date in data
+    ]
 
 async def log_workout(userId: UUID, workout_log: WorkoutLogRequest, db_session: AsyncSession) -> WorkoutLogs:
     new_log = WorkoutLogs(
         id=uuid.uuid4(),
         user_id=userId,
-        workout_date=workout_log.workout_date,
+        attendance_id=workout_log.attendance_id,
     )
     db_session.add(new_log)
     # No ORM relationship() ties these tables together (only raw FK columns), so the

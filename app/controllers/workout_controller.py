@@ -53,8 +53,5 @@ async def log_user_workout(request_data: WorkoutLogRequest, auth_user: UserRegis
 
     if not user_details:
         raise ValueError("User not found")
-    user = user_details["user"]
     
-    
-
-    return await workout_services.log_workout(user.id, request_data, db_session)
+    return await workout_services.log_workout(auth_user.id, request_data, db_session)

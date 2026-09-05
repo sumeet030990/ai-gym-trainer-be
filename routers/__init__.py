@@ -5,14 +5,16 @@ from routers.questions import router as questions_router
 from routers.gyms import router as gyms_router
 from routers.equipments import router as equipments_router
 from routers.workout import router as workout_router
+from routers.attendance import router as attendance_router
 api_router = APIRouter()
 
 api_router.include_router(users_router)
 api_router.include_router(auth_router)
-api_router.include_router(questions_router) 
+api_router.include_router(questions_router)
 api_router.include_router(gyms_router)
 api_router.include_router(equipments_router)
 api_router.include_router(workout_router)  # Include the AI router
+api_router.include_router(attendance_router)
 
 @api_router.get("/")
 def main():
