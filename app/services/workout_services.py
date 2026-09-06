@@ -163,6 +163,7 @@ async def check_if_workout_plan_regeneration_needed(user: Users, db_session: Asy
   if not user.current_plan_id:
       return PlanRegenerationCheckResponse(regeneration_required=True, reason="No workout plan found for user")
 
+  # Check if the workout plan needs to be regenerated for the user today.
   today = datetime.now(timezone.utc).replace(tzinfo=None).date()
   if user.last_regeneration_check and user.last_regeneration_check.date() == today:
       return PlanRegenerationCheckResponse(
