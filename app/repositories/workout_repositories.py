@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.schemas.workout_schemas import WorkoutLogRequest
 from db.schemas.user_workout_plans import UserWorkoutPlans
+from db.schemas.users import Users
 from db.schemas.user_attendance import UserAttendance
 from db.schemas.workout_logs import WorkoutLogs
 from db.schemas.workout_log_exercises import WorkoutLogExercises
@@ -16,31 +17,46 @@ from app.schemas.workout_plan_schema import WorkoutPlanResponseSchema, WorkoutPl
 
 async def save_workout_plan(user_details: dict, workout_plan: WorkoutPlanSchema, db_session: AsyncSession):
     user = user_details["user"]
-    
+
     new_plan = UserWorkoutPlans(
+        id=uuid.uuid4(),
         user_id=user.id,
-        workout_plan=workout_plan.model_dump(mode="json")
+        workout_plan=workout_plan.model_dump(mode="json"),
     )
-    
+
     db_session.add(new_plan)
-    
+
+    user.current_plan_id = new_plan.id
+    user.is_regeneration_required = False
+    user.last_regeneration_check = datetime.now(timezone.utc).replace(tzinfo=None)
+
     await db_session.commit()
     await db_session.refresh(new_plan)
-    
+
     return new_plan
-  
-  
+
+
 async def get_user_workout_plan(user_id: UUID, db_session: AsyncSession) -> WorkoutPlanResponseSchema:
-    
-    result = await db_session.execute(
-        select(UserWorkoutPlans).where(UserWorkoutPlans.user_id == user_id).order_by(UserWorkoutPlans.created_at.desc())
-    )
-    user_plan = result.scalars().first()
-    
-    if not user_plan:
+    user = await db_session.get(Users, user_id)
+
+    if not user or not user.current_plan_id:
         raise ValueError("Workout plan not found")
-    
-    return WorkoutPlanResponseSchema.model_validate(user_plan)
+
+    plan = await db_session.get(UserWorkoutPlans, user.current_plan_id)
+
+    if not plan:
+        raise ValueError("Workout plan not found")
+
+    return WorkoutPlanResponseSchema.model_validate(plan)
+
+
+async def get_workout_plan_by_id(plan_id: UUID, db_session: AsyncSession) -> UserWorkoutPlans:
+    plan = await db_session.get(UserWorkoutPlans, plan_id)
+
+    if not plan:
+        raise ValueError("Workout plan not found")
+
+    return plan
 
 
 async def get_user_workout_logs(userId: UUID, db_session: AsyncSession, start_date: Optional[str] = None, end_date: Optional[str] = None):

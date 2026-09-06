@@ -1,6 +1,7 @@
-from datetime import date
+from datetime import date, datetime
 import enum
 import uuid
+from typing import Optional
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -40,7 +41,10 @@ class Users(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     birth_date: Mapped[date | None] = mapped_column(nullable=True)
     sex: Mapped[UserSex | None] = mapped_column(nullable=True)
     diet_type: Mapped[DietType] = mapped_column(default=DietType.VEGETARIAN)
-    
+    current_plan_id: Mapped[Optional[uuid.UUID]] = mapped_column(ForeignKey("user_workout_plans.id", ondelete="SET NULL"), nullable=True)
+    is_regeneration_required: Mapped[bool] = mapped_column(nullable=False, default=False, server_default="false")
+    last_regeneration_check: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+
     role: Mapped[Roles] = relationship("Roles", foreign_keys=[role_id])
     subscriptions: Mapped[list["UserSubscriptions"]] = relationship("UserSubscriptions", foreign_keys=[UserSubscriptions.user_id], cascade="all, delete-orphan")
     goals: Mapped[list["UserGoalAnswers"]] = relationship("UserGoalAnswers", foreign_keys=[UserGoalAnswers.user_id], cascade="all, delete-orphan")

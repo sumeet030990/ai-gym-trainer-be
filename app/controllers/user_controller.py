@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.auth_schemas import UserRegisterResponse, UserUpdateRequest
 from app.schemas.common_schemas import PaginatedResponse, PaginationMeta
 from app.schemas.user_goal_answers_schema import UserGoalAnswerGroupSchema, UserGoalAnswersRequestSchema
+from app.schemas.user_schemas import AuthUserDetailsResponse
 from app.services import user_services
 from db.schemas.user_goal_answer import UserGoalAnswers
 
@@ -30,12 +31,11 @@ async def get_user_by_id(id: str, db_session: AsyncSession) -> UserRegisterRespo
         raise ValueError("User not found")
     return UserRegisterResponse.model_validate(user)
 
-async def get_auth_user_details(auth_user:UserRegisterResponse, db_session: AsyncSession):
-    user = await user_services.get_auth_user_details(auth_user, db_session)
-    if not user:
+async def get_auth_user_details(auth_user: UserRegisterResponse, db_session: AsyncSession) -> AuthUserDetailsResponse:
+    result = await user_services.get_auth_user_details(auth_user, db_session)
+    if not result:
         raise ValueError("User not found")
-    return user
-    # return UserRegisterResponse.model_validate(user)
+    return AuthUserDetailsResponse.model_validate(result)
 
 async def update_user_by_id(id: str, payload: UserUpdateRequest, db_session: AsyncSession) -> UserRegisterResponse:
     user = await user_services.update_user_by_id(id, payload, db_session)

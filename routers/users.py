@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from app.controllers import user_controller
 from app.schemas.auth_schemas import UserRegisterResponse, UserUpdateRequest
 from app.schemas.user_goal_answers_schema import UserGoalAnswersRequestSchema
+from app.schemas.user_schemas import AuthUserDetailsResponse
 from app.schemas.common_schemas import PaginatedResponse
 from core.security import is_user_authenticated
 from db.database import get_session
@@ -17,14 +18,12 @@ async def get_users(
 ):
     return await user_controller.get_all_users(db_session, page, page_size)
 
-@router.get("/me")
+@router.get("/me", response_model=AuthUserDetailsResponse)
 async def get_auth_user_details(
     auth_user=Depends(is_user_authenticated),
     db_session=Depends(get_session),
 ):
-    result =  await user_controller.get_auth_user_details(auth_user, db_session)
-    
-    return result
+    return await user_controller.get_auth_user_details(auth_user, db_session)
 
 @router.get("/{id}", response_model=UserRegisterResponse)
 async def get_user_by_id(id: str, auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):

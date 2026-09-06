@@ -41,3 +41,9 @@ class GetUserWorkoutPlanResponseSchema(BaseModel):
     id: uuid.UUID = Field(description="Unique identifier for the workout plan")
     workout_date: datetime = Field(description="Date when the workout was performed")
     created_at: datetime = Field(description="Timestamp when the workout plan was created")
+
+
+# =======================
+class PlanRegenerationCheckResponse(BaseModel):
+    regeneration_required: bool = Field(description="Whether the user's workout plan should be regenerated")
+    reason: str | None = Field(default=None, description="Why regeneration is or isn't required")

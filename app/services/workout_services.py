@@ -3,13 +3,15 @@ from typing import Optional
 from app.schemas.workout_schemas import WorkoutLogRequest
 from app.services import equipments_services, muscle_services
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import date
+from datetime import date, datetime, timezone
 from ai.agent import get_llm_provider
-from app.schemas.workout_plan_schema import WorkoutPlanResponseSchema, WorkoutPlanSchema
+from app.schemas.workout_plan_schema import PlanRegenerationCheckResponse, WorkoutPlanResponseSchema, WorkoutPlanSchema
+from app.common.constants import REGENERATE_AFTER_DAYS
 import os
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
-from app.repositories import workout_repositories
+from app.repositories import workout_repositories, user_repository
+from db.schemas.users import Users
 from uuid import UUID
 
 async def get_user_goals(user_details: dict):
@@ -157,15 +159,29 @@ async def get_user_workout_logs(userId: UUID, db_session: AsyncSession,start_dat
   return await workout_repositories.get_user_workout_logs(userId, db_session, start_date, end_date)
 
 # =====================================
-async def check_if_workout_plan_regeneration_needed(userId: UUID, db_session: AsyncSession) -> bool:
-  try:
-      
-      user_workout_plan = await workout_repositories.get_user_workout_plan(userId, db_session)
-      if not user_workout_plan:
-          return True
-      # Check if the workout plan needs regeneration based on custom logic
-      # For now, we assume it doesn't need regeneration if it exists
-      
-      return False
-  except ValueError:
-      return True
+async def check_if_workout_plan_regeneration_needed(user: Users, db_session: AsyncSession) -> PlanRegenerationCheckResponse:
+  if not user.current_plan_id:
+      return PlanRegenerationCheckResponse(regeneration_required=True, reason="No workout plan found for user")
+
+  today = datetime.now(timezone.utc).replace(tzinfo=None).date()
+  if user.last_regeneration_check and user.last_regeneration_check.date() == today:
+      return PlanRegenerationCheckResponse(
+          regeneration_required=False,
+          reason="Regeneration was already checked today; no need to check again",
+      )
+
+  workout_plan = await workout_repositories.get_workout_plan_by_id(user.current_plan_id, db_session)
+
+  # created_at is stored as a naive UTC timestamp (see save_workout_plan/TimestampMixin)
+  plan_age_days = (datetime.now(timezone.utc).replace(tzinfo=None) - workout_plan.created_at).days
+  regeneration_required = plan_age_days >= REGENERATE_AFTER_DAYS
+  reason = (
+      f"Current plan is {plan_age_days} days old (regenerates after {REGENERATE_AFTER_DAYS} days)"
+      if regeneration_required else None
+  )
+
+  user.is_regeneration_required = regeneration_required
+  user.last_regeneration_check = datetime.now(timezone.utc).replace(tzinfo=None)
+  await user_repository.update_user(db_session, user)
+
+  return PlanRegenerationCheckResponse(regeneration_required=regeneration_required, reason=reason)

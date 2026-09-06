@@ -53,5 +53,16 @@ async def log_user_workout(request_data: WorkoutLogRequest, auth_user: UserRegis
 
     if not user_details:
         raise ValueError("User not found")
-    
+
     return await workout_services.log_workout(auth_user.id, request_data, db_session)
+
+# =====================================
+async def check_plan_regeneration_required(auth_user: UserRegisterResponse, db_session: AsyncSession):
+    """Check whether the authenticated user's workout plan needs to be regenerated."""
+    user_details = await user_services.get_auth_user_details(auth_user, db_session)
+
+    if not user_details:
+        raise ValueError("User not found")
+    user = user_details["user"]
+
+    return await workout_services.check_if_workout_plan_regeneration_needed(user, db_session)
