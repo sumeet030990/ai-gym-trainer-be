@@ -5,6 +5,7 @@ from uuid import UUID
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy import func
 from app.schemas.workout_schemas import WorkoutLogRequest
 from db.schemas.user_workout_plans import UserWorkoutPlans
 from db.schemas.users import Users
@@ -91,6 +92,27 @@ async def get_user_workout_logs(userId: UUID, db_session: AsyncSession, start_da
         )
         for log, attendance_date in data
     ]
+
+async def get_recent_exercise_progress(user_id: UUID, db_session: AsyncSession, lookback_days: int):
+    """Per-session max weight lifted for each exercise the user logged recently, oldest first."""
+    since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=lookback_days)
+
+    query = (
+        select(
+            WorkoutLogExercises.exercise_id,
+            WorkoutLogs.created_at,
+            func.max(WorkoutLogSets.weight_kg),
+        )
+        .join(WorkoutLogs, WorkoutLogExercises.workout_log_id == WorkoutLogs.id)
+        .join(WorkoutLogSets, WorkoutLogSets.workout_log_exercise_id == WorkoutLogExercises.id)
+        .where(WorkoutLogs.user_id == user_id, WorkoutLogs.created_at >= since)
+        .group_by(WorkoutLogExercises.exercise_id, WorkoutLogs.id, WorkoutLogs.created_at)
+        .order_by(WorkoutLogExercises.exercise_id, WorkoutLogs.created_at.asc())
+    )
+
+    result = await db_session.execute(query)
+    return result.all()
+
 
 async def log_workout(userId: UUID, workout_log: WorkoutLogRequest, db_session: AsyncSession) -> WorkoutLogs:
     new_log = WorkoutLogs(

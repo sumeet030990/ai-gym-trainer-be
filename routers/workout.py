@@ -38,3 +38,7 @@ async def get_user_workout_logs(start_date: Optional[str] = None, end_date: Opti
 @router.get("/check-regeneration-required", summary="Check if the authenticated user's workout plan needs to be regenerated.")
 async def check_plan_regeneration_required(auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
     return await workout_controller.check_plan_regeneration_required(auth_user, db_session)
+
+@router.post("/regenerate-plan", summary="Regenerate the authenticated user's workout plan.")
+async def regenerate_plan(auth_user=Depends(is_user_authenticated), db_session=Depends(get_session)):
+    return await workout_controller.regenerate_plan(auth_user, db_session)

@@ -3,10 +3,17 @@ from typing import Optional
 from app.schemas.workout_schemas import WorkoutLogRequest
 from app.services import equipments_services, muscle_services
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from ai.agent import get_llm_provider
 from app.schemas.workout_plan_schema import PlanRegenerationCheckResponse, WorkoutPlanResponseSchema, WorkoutPlanSchema
-from app.common.constants import REGENERATE_AFTER_DAYS
+from app.common.constants import (
+    REGENERATE_AFTER_DAYS,
+    PLATEAU_LOOKBACK_DAYS,
+    PLATEAU_MIN_SESSIONS,
+    PLATEAU_SPIKE_THRESHOLD_PERCENT,
+    ADHERENCE_LOOKBACK_DAYS,
+    ADHERENCE_MIN_RATE,
+)
 import os
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
@@ -159,6 +166,52 @@ async def get_user_workout_logs(userId: UUID, db_session: AsyncSession,start_dat
   return await workout_repositories.get_user_workout_logs(userId, db_session, start_date, end_date)
 
 # =====================================
+async def check_progress_plateau_or_spike(user_id: UUID, db_session: AsyncSession) -> tuple[bool, Optional[str]]:
+  """Flags an exercise whose logged weight has stalled or jumped too fast over its recent sessions."""
+  exercise_progress = await workout_repositories.get_recent_exercise_progress(user_id, db_session, PLATEAU_LOOKBACK_DAYS)
+
+  weights_by_exercise: dict[UUID, list[float]] = {}
+  for exercise_id, _session_date, max_weight in exercise_progress:
+      weights_by_exercise.setdefault(exercise_id, []).append(max_weight)
+
+  for weights in weights_by_exercise.values():
+      if len(weights) < PLATEAU_MIN_SESSIONS:
+          continue
+
+      recent = weights[-PLATEAU_MIN_SESSIONS:]
+      if all(weight == recent[0] for weight in recent):
+          return True, f"Weight has stalled at {recent[0]}kg over the last {PLATEAU_MIN_SESSIONS} sessions for an exercise"
+
+      for previous, current in zip(recent, recent[1:]):
+          if previous > 0 and (current - previous) / previous * 100 >= PLATEAU_SPIKE_THRESHOLD_PERCENT:
+              return True, f"Weight jumped more than {PLATEAU_SPIKE_THRESHOLD_PERCENT}% between sessions for an exercise"
+
+  return False, None
+
+
+async def check_adherence_rate(user: Users, workout_plan, db_session: AsyncSession) -> tuple[bool, Optional[str]]:
+  """Flags a user logging far fewer sessions than their plan's weekly training days expect."""
+  sessions_per_week = len(workout_plan.workout_plan.get("days", []))
+  if sessions_per_week == 0:
+      return False, None
+
+  since = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=ADHERENCE_LOOKBACK_DAYS)
+  logs = await workout_repositories.get_user_workout_logs(
+      user.id, db_session, start_date=since.date().isoformat()
+  )
+
+  expected_sessions = sessions_per_week * (ADHERENCE_LOOKBACK_DAYS / 7)
+  adherence_rate = len(logs) / expected_sessions
+
+  if adherence_rate < ADHERENCE_MIN_RATE:
+      return True, (
+          f"Only {len(logs)} of ~{round(expected_sessions)} expected sessions logged "
+          f"in the last {ADHERENCE_LOOKBACK_DAYS} days"
+      )
+
+  return False, None
+
+
 async def check_if_workout_plan_regeneration_needed(user: Users, db_session: AsyncSession) -> PlanRegenerationCheckResponse:
   if not user.current_plan_id:
       return PlanRegenerationCheckResponse(regeneration_required=True, reason="No workout plan found for user")
@@ -175,11 +228,21 @@ async def check_if_workout_plan_regeneration_needed(user: Users, db_session: Asy
 
   # created_at is stored as a naive UTC timestamp (see save_workout_plan/TimestampMixin)
   plan_age_days = (datetime.now(timezone.utc).replace(tzinfo=None) - workout_plan.created_at).days
-  regeneration_required = plan_age_days >= REGENERATE_AFTER_DAYS
-  reason = (
-      f"Current plan is {plan_age_days} days old (regenerates after {REGENERATE_AFTER_DAYS} days)"
-      if regeneration_required else None
-  )
+
+  reasons = []
+  if plan_age_days >= REGENERATE_AFTER_DAYS:
+      reasons.append(f"Current plan is {plan_age_days} days old (regenerates after {REGENERATE_AFTER_DAYS} days)")
+
+  plateau_flagged, plateau_reason = await check_progress_plateau_or_spike(user.id, db_session)
+  if plateau_flagged:
+      reasons.append(plateau_reason)
+
+  adherence_flagged, adherence_reason = await check_adherence_rate(user, workout_plan, db_session)
+  if adherence_flagged:
+      reasons.append(adherence_reason)
+
+  regeneration_required = bool(reasons)
+  reason = "; ".join(reasons) if reasons else None
 
   user.is_regeneration_required = regeneration_required
   user.last_regeneration_check = datetime.now(timezone.utc).replace(tzinfo=None)
