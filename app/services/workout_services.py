@@ -18,6 +18,7 @@ import os
 from langchain.agents import create_agent
 from langchain_core.messages import HumanMessage
 from app.repositories import workout_repositories, user_repository
+from app.services import attendance_services
 from db.schemas.users import Users
 from uuid import UUID
 
@@ -144,6 +145,79 @@ async def generate_workout_plan(user_details: dict, db_session: AsyncSession) ->
 
   return agent_response["structured_response"]
 
+
+def build_workout_regeneration_system_prompt() -> str:
+  return (
+      build_workout_plan_system_prompt() + " "
+      "You are regenerating an existing plan, not creating one from scratch. "
+      "Use the client's previous plan plus their logged adherence and progress data to decide what to change: "
+      "if adherence is high and lifts are progressing, apply progressive overload (more weight/reps/difficulty); "
+      "if adherence is low or an exercise has plateaued or spiked, simplify it, swap it, or reduce volume instead of repeating what isn't working. "
+      "Keep the previous plan's structure where the data shows it's working; change only what the data suggests should change."
+  )
+
+
+def build_workout_regeneration_prompt(
+    user, age, latest_measurement, user_goals, muscle_names, equipment_names, training_days,
+    previous_plan: WorkoutPlanSchema, plan_age_days: int,
+    adherence_reason: Optional[str], plateau_reason: Optional[str], attendance_count: int,
+) -> str:
+  return (
+      build_workout_plan_prompt(user, age, latest_measurement, user_goals, muscle_names, equipment_names, training_days)
+      + f"\nThis is a regeneration of an existing {plan_age_days}-day-old plan, not a first-time plan.\n"
+      f"Previous plan: {previous_plan.model_dump_json()}\n"
+      f"Adherence: {adherence_reason or 'No adherence issues detected'}\n"
+      f"Progress: {plateau_reason or 'No plateau/spike issues detected'}\n"
+      f"Gym check-ins in the last 30 days: {attendance_count}\n"
+  )
+
+
+def build_workout_regeneration_llm_agent():
+  # TODO: later as per user preferences will use llm and model.
+  llm = get_llm_provider(apiKey=str(os.getenv("GROQ_API_KEY")), llm_name="groq", model_name="openai/gpt-oss-120b")
+
+  return create_agent(
+      model=llm,
+      tools=[],
+      system_prompt=build_workout_regeneration_system_prompt(),
+      response_format=WorkoutPlanSchema,
+      debug=True # Enables detailed logging of the execution flow
+  )
+
+
+async def regenerate_workout_plan(user_details: dict, db_session: AsyncSession) -> WorkoutPlanSchema:
+  user = user_details["user"]
+
+  if not user.current_plan_id:
+      return await generate_workout_plan(user_details, db_session)
+
+  equipment_names, muscle_names = await get_gym_context(db_session)
+  user_goals = await get_user_goals(user_details)
+  training_days = get_training_days(user_goals)
+  age = await get_user_age(user)
+  latest_measurement = get_latest_measurement(user)
+
+  current_plan_row = await workout_repositories.get_workout_plan_by_id(user.current_plan_id, db_session)
+  plan_age_days = (datetime.now(timezone.utc).replace(tzinfo=None) - current_plan_row.created_at).days
+  previous_plan = WorkoutPlanSchema.model_validate(current_plan_row.workout_plan)
+
+  _, plateau_reason = await check_progress_plateau_or_spike(user.id, db_session)
+  _, adherence_reason = await check_adherence_rate(user, current_plan_row, db_session)
+  attendance_records = await attendance_services.get_user_attendance(user.id, db_session)
+
+  agent = build_workout_regeneration_llm_agent()
+  prompt = build_workout_regeneration_prompt(
+      user, age, latest_measurement, user_goals, muscle_names, equipment_names, training_days,
+      previous_plan, plan_age_days, adherence_reason, plateau_reason, len(attendance_records),
+  )
+
+  agent_response = await agent.ainvoke({
+      "messages": [
+          HumanMessage(content=prompt)
+      ]
+  })
+
+  return agent_response["structured_response"]
 
 
 # =====================================

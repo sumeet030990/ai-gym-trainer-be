@@ -76,6 +76,6 @@ async def regenerate_plan(auth_user: UserRegisterResponse, db_session: AsyncSess
         raise ValueError("User not found")
     user = user_details["user"]
 
-    workout_plan = await workout_services.generate_workout_plan(user_details, db_session)
+    workout_plan = await workout_services.regenerate_workout_plan(user_details, db_session)
     saved_plan = await workout_services.save_workout_plan(user_details, workout_plan, db_session)
     return saved_plan
