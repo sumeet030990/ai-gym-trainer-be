@@ -12,6 +12,11 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str
     access_token_expire_minutes: int
+    be_api_url: str = "http://localhost:8000"
+
+    @property
+    def cors_origins(self) -> list[str]:
+        return [origin.strip() for origin in self.be_api_url.split(",") if origin.strip()]
 
     @property
     def database_url(self) -> str:
