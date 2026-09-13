@@ -1,6 +1,11 @@
 ## Run the Program Using
 - uv run uvicorn main:app --reload
 
+
+## Environment 
+Activate env using command
+- source .venv/bin/activate
+
 ## UV commands
 - uv init: Create a new Python project.
 - uv add: Add a dependency to the project.

@@ -13,10 +13,11 @@ class Settings(BaseSettings):
     algorithm: str
     access_token_expire_minutes: int
     be_api_url: str = "http://localhost:8000"
+    mobile_fe_url: str = "http://192.168.31.224:8081"
 
     @property
     def cors_origins(self) -> list[str]:
-        return [origin.strip() for origin in self.be_api_url.split(",") if origin.strip()]
+        return [origin.strip() for origin in self.mobile_fe_url.split(",") if origin.strip()]
 
     @property
     def database_url(self) -> str:
