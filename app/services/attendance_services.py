@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories import attendance_repository
@@ -9,6 +10,10 @@ from db.schemas import UserAttendance
 
 
 async def create_attendance(user_id: UUID, attendance_date: datetime, db_session: AsyncSession) -> UserAttendance:
+    existing = await attendance_repository.get_attendance_by_user_and_date(user_id, attendance_date, db_session)
+    if existing is not None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "Attendance already logged for this date.")
+
     return await attendance_repository.create_attendance(user_id, attendance_date, db_session)
 
 

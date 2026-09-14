@@ -2,10 +2,26 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional
 from uuid import UUID
 
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from db.schemas import UserAttendance
+
+
+async def get_attendance_by_user_and_date(
+    user_id: UUID, attendance_date: datetime, db_session: AsyncSession
+) -> Optional[UserAttendance]:
+    if attendance_date.tzinfo is not None:
+        attendance_date = attendance_date.astimezone(timezone.utc).replace(tzinfo=None)
+
+    result = await db_session.execute(
+        select(UserAttendance).where(
+            UserAttendance.user_id == user_id,
+            func.date(UserAttendance.attendance_date) == attendance_date.date(),
+        )
+    )
+    return result.scalars().first()
 
 
 async def create_attendance(user_id: UUID, attendance_date: datetime, db_session: AsyncSession) -> UserAttendance:
